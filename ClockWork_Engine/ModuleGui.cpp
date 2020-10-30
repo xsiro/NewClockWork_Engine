@@ -99,6 +99,7 @@ bool ModuleGui::Start()
 	io->Fonts->AddFontDefault();
 	io->Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 14);
 
+	App->renderer3D->OnResize(SCREEN_WIDTH, SCREEN_HEIGHT);
 	return true;
 }
 
