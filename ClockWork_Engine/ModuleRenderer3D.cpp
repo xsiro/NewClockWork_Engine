@@ -1,6 +1,7 @@
 #include "Globals.h"
 #include "Application.h"
 #include "ModuleRenderer3D.h"
+#include "Primitive.h"
 #include "ModuleWindow.h"
 #include "glew/include/glew.h"
 #include "SDL\include\SDL_opengl.h"
@@ -161,8 +162,8 @@ update_status ModuleRenderer3D::PreUpdate(float dt)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
 
-	Color c = App->camera->background;
-	glClearColor(c.r, c.g, c.b, c.a);
+	//Color c = App->camera->background;
+	//glClearColor(c.r, c.g, c.b, c.a);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixf(App->camera->GetViewMatrix());

@@ -3,6 +3,7 @@
 #include "ModuleGui.h"
 #include "ModuleAudio.h"
 #include "ModuleWindow.h"
+#include "Primitive.h"
 
 
 #include <stdio.h>
@@ -112,6 +113,14 @@ update_status ModuleGui::PreUpdate(float dt)
 update_status ModuleGui::Update(float dt)
 {
 	
+
+
+	return  UPDATE_CONTINUE;
+}
+
+// Called after all Updates
+update_status ModuleGui::PostUpdate(float dt)
+{
 	bool ret = true;
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
@@ -139,7 +148,7 @@ update_status ModuleGui::Update(float dt)
 			{
 				ImGui::EndMenu();
 			}
-		}	
+		}
 		if (ImGui::BeginMenu("About"))
 		{
 
@@ -190,12 +199,12 @@ update_status ModuleGui::Update(float dt)
 			}
 
 		}
-	ImGui::EndMainMenuBar();
-	
-	}
-	
+		ImGui::EndMainMenuBar();
 
-	
+	}
+
+
+
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	//if (mainwindow)
 		//ImGui::ShowDemoWindow(&mainwindow);
@@ -219,7 +228,7 @@ update_status ModuleGui::Update(float dt)
 
 			ImGui::Text("Limit Framerate: ");
 			ImGui::SameLine();
-			ImGui::TextColored(color, "%i", fps);    
+			ImGui::TextColored(color, "%i", fps);
 			fps_log.erase(fps_log.begin());
 			fps_log.push_back(App->fps);
 			ms_log.erase(ms_log.begin());
@@ -308,56 +317,43 @@ update_status ModuleGui::Update(float dt)
 		{
 
 		}
-	
+
 		ImGui::End();
-		
+
 	}
 
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
-	
-		static float f = 0.0f;
-		static int counter = 0;
 
-		ImGui::Begin("Clockwork_engine");                          // Create a window called "Hello, world!" and append into it.
+	static float f = 0.0f;
+	static int counter = 0;
 
-		ImGui::Text("YES");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-		
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("Background color", (float*)&clear_color); // Edit 3 floats representing a color
+	ImGui::Begin("Clockwork_engine");                          // Create a window called "Hello, world!" and append into it.
 
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
-		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
+	ImGui::Text("YES");               // Display some text (you can use a format strings too)
+	ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
 
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::End();
-	
+	ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+	ImGui::ColorEdit3("Background color", (float*)&clear_color); // Edit 3 floats representing a color
+
+	if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+		counter++;
+	ImGui::SameLine();
+	ImGui::Text("counter = %d", counter);
+
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::End();
+
 
 	// Rendering
 	ImGui::Render();
 	glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
-	glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-	glClear(GL_COLOR_BUFFER_BIT);
+	//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+	//glClear(GL_COLOR_BUFFER_BIT);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	//SDL_GL_SwapWindow(App->window->window);	
-
 	return  UPDATE_CONTINUE;
 }
 
-// Called after all Updates
-update_status ModuleGui::PostUpdate(float dt)
-{
-
-	return  UPDATE_CONTINUE;
-}
-void ModuleGui::Draw() {
-
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-}
 
 // Called before quitting
 bool ModuleGui::CleanUp()

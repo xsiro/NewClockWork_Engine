@@ -54,7 +54,7 @@ public:
 	// Called before quitting
 	bool CleanUp();
 
-	void Draw();
+
 	void ConsoleMenu();
 	bool DrawConsole(ImGuiIO& io);
 	

@@ -2,26 +2,29 @@
 #include "Globals.h"
 #include "Timer.h"
 #include "Module.h"
+#include "Primitive.h"
 #include "ModuleWindow.h"
 #include "ModuleInput.h"
 #include "ModuleAudio.h"
 #include "ModuleRenderer3D.h"
+#include "ModuleGui.h"
 #include "ModuleCamera3D.h"
 #include "ModuleSceneIntro.h"
 #include "ModulePhysics3D.h"
-#include "ModuleGui.h"
+
 #include "gl3w.h"
 
 Application::Application()
 {
 	window = new ModuleWindow(this);
-	input = new ModuleInput(this);
+	input = new ModuleInput(this);	
+	scene = new ModuleSceneIntro(this, true);
 	audio = new ModuleAudio(this, true);
-	renderer3D = new ModuleRenderer3D(this);
-	camera = new ModuleCamera3D(this);
-	scene = new ModuleSceneIntro(this);
-	physics = new ModulePhysics3D(this);
 	gui = new ModuleGui(this);
+	renderer3D = new ModuleRenderer3D(this, true);
+	camera = new ModuleCamera3D(this);
+	physics = new ModulePhysics3D(this);
+	
 
 
 	// The order of calls is very important!
@@ -31,14 +34,14 @@ Application::Application()
 	// Main Modules
 	AddModule(window);
 	AddModule(camera);
-	AddModule(input);
+	
 	AddModule(audio);
-	AddModule(scene);
+	AddModule(input);
 	AddModule(physics);
 	AddModule(gui);
 	
 	// Scenes
-
+AddModule(scene);
 	// Renderer last!
 	AddModule(renderer3D);
 	max_ms = 1000 / 60;
