@@ -38,10 +38,10 @@ Application::Application()
 	AddModule(audio);
 	AddModule(input);
 	AddModule(physics);
-	AddModule(gui);
 	
 	// Scenes
-AddModule(scene);
+	AddModule(scene);
+	AddModule(gui);
 	// Renderer last!
 	AddModule(renderer3D);
 	max_ms = 1000 / 60;
