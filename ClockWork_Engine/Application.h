@@ -65,3 +65,4 @@ public:
 };
 
 extern Application* App;
+extern std::vector<std::string> log_list;

@@ -113,9 +113,6 @@ update_status ModuleGui::PreUpdate(float dt)
 // Called every frame
 update_status ModuleGui::Update(float dt)
 {
-	
-
-
 	return  UPDATE_CONTINUE;
 }
 
@@ -322,6 +319,8 @@ update_status ModuleGui::PostUpdate(float dt)
 	{
 		if (!ImGui::Begin("Console", &console))
 		{
+			if (App->input->GetKey(SDL_SCANCODE_D) == KEY_DOWN) LOG("Console working");
+
 			ImGui::End();
 		}
 		else

@@ -10,6 +10,7 @@
 #include "SDL/include/SDL_video.h"
 
 #define CURSOR_WIDTH 2
+#define MAX_LOGS 30
 
 struct SDL_Texture;
 struct _TTF_Font;
