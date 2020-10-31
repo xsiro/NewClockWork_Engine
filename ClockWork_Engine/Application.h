@@ -11,6 +11,7 @@
 #include "ModuleSceneIntro.h"
 #include "ModulePhysics3D.h"
 #include "ModuleGui.h"
+#include "ModuleMeshLoader.h"
 
 #include <list>
 
@@ -25,6 +26,7 @@ public:
 	ModuleSceneIntro* scene;
 	ModulePhysics3D* physics;
 	ModuleGui* gui;
+	ModuleMeshLoader* mesh_loader;
 	bool					renderPrimitives;
 private:
 

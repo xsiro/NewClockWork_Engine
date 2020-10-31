@@ -11,6 +11,7 @@
 #include "ModuleCamera3D.h"
 #include "ModuleSceneIntro.h"
 #include "ModulePhysics3D.h"
+#include "ModuleMeshLoader.h"
 
 #include "gl3w.h"
 #include <functional>
@@ -25,6 +26,7 @@ Application::Application()
 	renderer3D = new ModuleRenderer3D(this);
 	camera = new ModuleCamera3D(this);
 	physics = new ModulePhysics3D(this);
+	mesh_loader = new ModuleMeshLoader(this);
 	
 
 
@@ -40,6 +42,7 @@ Application::Application()
 	AddModule(input);
 	AddModule(gui);
 	AddModule(physics);
+	AddModule(mesh_loader);
 	
 	// Scenes
 	AddModule(scene);

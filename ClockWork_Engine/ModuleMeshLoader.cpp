@@ -39,7 +39,6 @@ bool ModuleMeshLoader::Start()
 // Called before Update
 update_status ModuleMeshLoader::PreUpdate(float dt)
 {
-
 		return UPDATE_CONTINUE;
 }
 

@@ -13,7 +13,7 @@ public:
 	// Destructor
 	virtual ~ModuleMeshLoader();
 
-	// Called when before render is available
+	// Called before render is available
 	bool Awake();
 
 	// Call before first frame
