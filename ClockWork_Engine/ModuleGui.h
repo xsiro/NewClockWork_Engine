@@ -71,7 +71,7 @@ public:
 	bool show_another_window = false;
 	void RequestBrowser(const char*);
 	void ClearLog();
-	void ConsoleOutput();
+	void ConsoleLog(char* log);
 	bool show_configuration_window;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
@@ -85,11 +85,10 @@ public:
 	bool vertexlines;
 	bool facelines;
 	float brightness;
-	void Log(const char* log);
 	const char* GetName() const;
 	const char* name;
+	bool scroll;
 
-private:
 
 	SDL_GLContext gl_context; 
 	ImGuiIO* io = nullptr;

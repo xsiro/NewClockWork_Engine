@@ -13,15 +13,16 @@
 #include "ModulePhysics3D.h"
 
 #include "gl3w.h"
+#include <functional>
 
 Application::Application()
 {
 	window = new ModuleWindow(this);
 	input = new ModuleInput(this);	
-	scene = new ModuleSceneIntro(this, true);
-	audio = new ModuleAudio(this, true);
+	scene = new ModuleSceneIntro(this);
+	audio = new ModuleAudio(this);
 	gui = new ModuleGui(this);
-	renderer3D = new ModuleRenderer3D(this, true);
+	renderer3D = new ModuleRenderer3D(this);
 	camera = new ModuleCamera3D(this);
 	physics = new ModulePhysics3D(this);
 	
@@ -37,11 +38,12 @@ Application::Application()
 	
 	AddModule(audio);
 	AddModule(input);
+	AddModule(gui);
 	AddModule(physics);
 	
 	// Scenes
 	AddModule(scene);
-	AddModule(gui);
+	
 	// Renderer last!
 	AddModule(renderer3D);
 	max_ms = 1000 / 60;

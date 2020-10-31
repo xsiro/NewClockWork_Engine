@@ -152,52 +152,47 @@ update_status ModuleGui::PostUpdate(float dt)
 		}
 		if (ImGui::BeginMenu("About"))
 		{
+			if (ImGui::MenuItem("About")) about = !about;
+			{					
+						ImGui::Text("ClockWorkEngine is developed by Daniel Ruiz & Pol Cortés");
+						ImGui::Text("This engine has been coded in C++");
+						ImGui::Text("Libraries:");
+						ImGui::Text("OpenGL v2.1");
+						ImGui::Text("Glew v7.0");
+						ImGui::Text("MathGeoLib v1.5");
+						ImGui::Text("PhysFS v3.0.2");
 
-			ImGui::OpenPopup("About");
-			if (ImGui::BeginPopupModal("About"))
-			{
-				ImGui::Text("ClockWorkEngine is developed by Daniel Ruiz & Pol Cortés");
-				ImGui::Text("This engine has been coded in C++");
-				ImGui::Text("Libraries:");
-				ImGui::Text("OpenGL v2.1");
-				ImGui::Text("Glew v7.0");
-				ImGui::Text("MathGeoLib v1.5");
-				ImGui::Text("PhysFS v3.0.2");
+						ImGui::Text("");
 
-				ImGui::Text("");
-
-				ImGui::Text("LICENSE:");
-				ImGui::Text("");
-				ImGui::Text("MIT License");
-				ImGui::Text("");
-				ImGui::Text("Copyright (c) 2020 [Daniel Ruiz & Pol Cortés]");
-				ImGui::Text("");
-				ImGui::Text("Permission is hereby granted, free of charge, to any person obtaining a copy");
-				ImGui::Text("of this software and associated documentation files (the 'Software'), to deal");
-				ImGui::Text("in the Software without restriction, including without limitation the rights");
-				ImGui::Text("to use, copy, modify, merge, publish, distribute, sublicense, and/or sell");
-				ImGui::Text("copies of the Software, and to permit persons to whom the Software is");
-				ImGui::Text("furnished to do so, subject to the following conditions:");
-				ImGui::Text("");
-				ImGui::Text("The above copyright notice and this permission notice shall be included in all");
-				ImGui::Text("copies or substantial portions of the Software.");
-				ImGui::Text("");
-				ImGui::Text("THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR");
-				ImGui::Text("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,");
-				ImGui::Text("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE");
-				ImGui::Text("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER");
-				ImGui::Text("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,");
-				ImGui::Text("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN ");
-				ImGui::Text("THE SOFTWARE.");
-
-				if (ImGui::Button("Close"))
-				{
-					ImGui::CloseCurrentPopup();
-					ret = false;
-				}
-				ImGui::EndPopup();
-				ImGui::EndMenu();
+						ImGui::Text("LICENSE:");
+						ImGui::Text("");
+						ImGui::Text("MIT License");
+						ImGui::Text("");
+						ImGui::Text("Copyright (c) 2020 [Daniel Ruiz & Pol Cortés]");
+						ImGui::Text("");
+						ImGui::Text("Permission is hereby granted, free of charge, to any person obtaining a copy");
+						ImGui::Text("of this software and associated documentation files (the 'Software'), to deal");
+						ImGui::Text("in the Software without restriction, including without limitation the rights");
+						ImGui::Text("to use, copy, modify, merge, publish, distribute, sublicense, and/or sell");
+						ImGui::Text("copies of the Software, and to permit persons to whom the Software is");
+						ImGui::Text("furnished to do so, subject to the following conditions:");
+						ImGui::Text("");
+						ImGui::Text("The above copyright notice and this permission notice shall be included in all");
+						ImGui::Text("copies or substantial portions of the Software.");
+						ImGui::Text("");
+						ImGui::Text("THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR");
+						ImGui::Text("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,");
+						ImGui::Text("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE");
+						ImGui::Text("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER");
+						ImGui::Text("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,");
+						ImGui::Text("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN ");
+						ImGui::Text("THE SOFTWARE.");
+						ImGui::End();
+					
+				
+				
 			}
+
 
 		}
 		ImGui::EndMainMenuBar();
@@ -323,6 +318,31 @@ update_status ModuleGui::PostUpdate(float dt)
 
 	}
 
+	if (console)
+	{
+		if (!ImGui::Begin("Console", &console))
+		{
+			ImGui::End();
+		}
+		else
+		{
+			std::vector<char*>::iterator item = logs.begin();
+
+			for (item; item != logs.end(); ++item)
+			{
+				ImGui::TextUnformatted((*item));
+			}
+
+			if (scroll)
+			{
+				ImGui::SetScrollHere(1.0f);
+				scroll = false;
+			}
+
+			ImGui::End();
+		}
+
+	}
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a named window.
 
 	//static float f = 0.0f;
@@ -360,6 +380,7 @@ update_status ModuleGui::PostUpdate(float dt)
 bool ModuleGui::CleanUp()
 {
 	LOG("Freeing Gui");
+	ClearLog();
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
@@ -373,6 +394,12 @@ void ModuleGui::RequestBrowser(const char* path)
 	ShellExecuteA(0, "Open", path, 0, "", 5);
 }
 
+void ModuleGui::ConsoleLog(char* log)
+{
+	logs.push_back(strdup(log));
+	scroll = true;
+}
+
 void ModuleGui::ClearLog()
 {
 	for (int i = 0; i < logs.size(); ++i)
@@ -383,64 +410,7 @@ void ModuleGui::ClearLog()
 	logs.clear();
 }
 
-bool ModuleGui::DrawConsole(ImGuiIO& io)
-{
-	bool ret = true;
-	ImGuiWindowFlags win_flags = ImGuiWindowFlags_MenuBar;
-	ImGui::Begin(GetName(), NULL, win_flags);
-	ConsoleMenu();
-	ConsoleOutput();
-	ImGui::End();
-	return ret;
-}
 
-void ModuleGui::ConsoleOutput()
-{
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 6));
-
-	for (int i = 0; i < logs.size(); ++i)
-	{
-		ImVec4 text_colour = { 1.0f, 1.0f, 1.0f, 1.0f };
-
-		if (strstr(logs[i], "[ERROR]") != nullptr)
-		{
-			text_colour = { 1.0f, 0.0f, 0.0f, 1.0f };
-
-			if (strstr(logs[i], "[WARNING]") != nullptr)
-			{
-				text_colour = { 1.0f, 1.0f, 0.0f, 1.0f };
-			}
-
-			ImGui::PushStyleColor(ImGuiCol_Text, text_colour);
-			ImGui::TextUnformatted(logs[i]);
-			ImGui::PopStyleColor();
-		}
-	}
-
-	ImGui::PopStyleVar();
-}
-
-void ModuleGui::ConsoleMenu()
-{
-	ImGui::BeginMenuBar();														
-
-	if (ImGui::BeginMenu("Options"))											
-	{
-		if (ImGui::MenuItem("Clear Console"))									
-		{
-			ClearLog();
-		}
-
-		if (ImGui::MenuItem("Close Console"))
-		{
-			
-		}
-
-		ImGui::EndMenu();														
-	}
-
-	ImGui::EndMenuBar();														
-}
 
 const char* ModuleGui::GetName() const
 {
