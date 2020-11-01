@@ -11,7 +11,7 @@
 #include "Assimp/include/postprocess.h"
 #include "Assimp/include/cfileio.h"
 
-#pragma comment (lib, "Assimp/lib86/assimp.lib")
+#pragma comment (lib, "Assimp/libx86/assimp.lib")
 
 
 ModuleMeshLoader::ModuleMeshLoader(Application* app, bool start_enabled) : Module(app, start_enabled)
