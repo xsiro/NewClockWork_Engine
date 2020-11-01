@@ -34,6 +34,7 @@ ModuleGui::ModuleGui(Application* app, bool start_enabled) : Module(app, start_e
 	viewconfig = true;
 	console = true;
 	about = false;
+	inspector = true;
 }
 
 // Destructor
@@ -205,7 +206,45 @@ update_status ModuleGui::Update(float dt)
 
 	}
 
+	if (inspector)
+	{
+		ImGui::Begin("Inspector", &inspector);
+		ImGui::Text("Inspector");
+		if (ImGui::CollapsingHeader("Mesh"))
+		{
+			ImGui::Separator();
+			ImGui::Text("File:");
+			ImGui::SameLine();
+			ImGui::TextColored({ 1.0f, 1.0f, 0.0f, 1.0f }, "%s", App->importer->GetMeshFileName());
+			ImGui::Separator();
+			ImGui::BulletText("General");
 
+			if (ImGui::Checkbox("Wireframe", &wireframe));
+
+			if (ImGui::Checkbox("See Vertex Lines (Blue)", &vertexlines));
+
+			if (ImGui::Checkbox("See Face Lines (Green)", &facelines));
+
+			if (ImGui::Checkbox("Depth Test", &depthtest)) {
+				App->renderer3D->SetDepthtest(depthtest);
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Cull Face", &cullface)) {
+				App->renderer3D->SetCullface(cullface);
+			}
+			ImGui::SameLine();
+			if (ImGui::Checkbox("Lightning", &lighting)) {
+				App->renderer3D->SetLighting(lighting);
+			}
+
+			ImGui::BulletText("Polygons");
+			if (ImGui::Checkbox("Polygons smooth", &polygonssmooth)) {
+				App->renderer3D->SetPolygonssmooth(polygonssmooth);
+			}
+
+		}
+		ImGui::End();
+	}
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	//if (mainwindow)

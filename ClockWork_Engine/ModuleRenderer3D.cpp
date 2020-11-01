@@ -16,50 +16,6 @@
 #pragma comment (lib, "opengl32.lib") /* link Microsoft OpenGL lib   */
 #pragma comment (lib, "glew/libx86/glew32.lib")
 
-static const float num_vertices[] = {
-	-1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f };
-
-uint indices[] = { 0, 1, 2,   2, 3, 0,      // front face
-				   4, 5, 6,   6, 7, 4,      // right face
-				   8, 9,10,  10,11, 8,      // top face
-				   12,13,14,  14,15,12,      // left face
-				   16,17,18,  18,19,16,      // bottom face
-				   20,21,22,  22,23,20 };    // back face
 
 ModuleRenderer3D::ModuleRenderer3D(Application* app, bool start_enabled) : Module(app, start_enabled)
 {
@@ -259,7 +215,7 @@ void ModuleRenderer3D::RenderFBX() {
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	/*glBindBuffer(GL_ARRAY_BUFFER, mesh->id_vertex);*/
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->id_vertex);
 	glVertexPointer(3, GL_FLOAT, 0, NULL);
 
 	/*glBindBuffer(GL_ARRAY_BUFFER, mesh->id_normals);*/
@@ -270,7 +226,7 @@ void ModuleRenderer3D::RenderFBX() {
 	/*glBindBuffer(GL_ARRAY_BUFFER, mesh->id_texcoords);*/
 	glTexCoordPointer(2, GL_FLOAT, 0, NULL);
 
-	/*glDrawElements(GL_TRIANGLES, mesh->num_index, GL_UNSIGNED_INT, NULL);*/
+	//glDrawElements(GL_TRIANGLES, mesh->num_index, GL_UNSIGNED_INT, NULL);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -286,7 +242,7 @@ void ModuleRenderer3D::DrawVertexNormalLines()
 {
 
 	glBegin(GL_LINES);
-	glColor3f(1.0f, 0.0f, 0.0f);
+	glColor3f(0.0f, 0.0f, 1.5f);
 
 	for (size_t i = 0; i < App->importer->myMesh.num_vertex * 3; i += 3)
 	{
@@ -308,7 +264,7 @@ void ModuleRenderer3D::DrawVertexNormalLines()
 void ModuleRenderer3D::DrawFaceNormalLines() {
 
 	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 0.0f);
+	glColor3f(0.0f, 1.5f, 0.0f);
 
 	for (size_t i = 0; i < App->importer->myMesh.num_vertex * 3; i += 3)
 	{
@@ -409,27 +365,9 @@ void ModuleRenderer3D::CreateCube()
 	glLineWidth(1.0f);
 }
 
-void ModuleRenderer3D::CreateVertexCube()
-{
-	uint my_id = 0;
-	glGenBuffers(1, (GLuint*)&(my_id));
-	glBindBuffer(GL_ARRAY_BUFFER, my_id);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(num_vertices) * 3, num_vertices, GL_STATIC_DRAW);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glBindBuffer(GL_ARRAY_BUFFER, my_id);
-	glVertexPointer(3, GL_FLOAT, 0, NULL);
-	//glDrawArrays(GL_TRIANGLES, 0, num_vertices);
-	glDisableClientState(GL_VERTEX_ARRAY);
-}
-
-void CreateIndexCube()
-{
-	uint my_indices = 0;
-	glGenBuffers(1, (GLuint*)&(my_indices));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, my_indices);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * 18, indices, GL_STATIC_DRAW);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, my_indices);
-	glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, NULL);
+void ModuleRenderer3D::SetPolygonssmooth(bool state) {
+	if (state == false)
+		glEnable(GL_POLYGON_SMOOTH);
+	else if (state == true)
+		glDisable(GL_POLYGON_SMOOTH);
 }

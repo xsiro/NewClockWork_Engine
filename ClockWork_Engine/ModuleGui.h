@@ -68,6 +68,11 @@ public:
 	bool mainwindow;
 	bool viewconfig;
 	bool viewconsole;
+	bool inspector;
+	bool depthtest;
+	bool cullface;
+	bool lighting;
+	bool polygonssmooth;
 	bool console = false;
 	bool about;
 	bool wireframe;

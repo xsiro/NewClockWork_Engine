@@ -23,8 +23,7 @@ public:
 	update_status PostUpdate(float dt);
 	bool CleanUp();
 
-	void RenderFBX();
-	void LoadFBXBuffer();
+	
 	void DrawVertexNormalLines();
 	void DrawFaceNormalLines();
 	void LoadTextures();
@@ -35,10 +34,13 @@ public:
 	void SetColormaterial(bool state);
 	void SetTexture2D(bool state);
 	void CreateCube();
+	void RenderFBX();
+	void LoadFBXBuffer();
+	void SetPolygonssmooth(bool state);
 	void CreateVertexCube();
 	void CreateIndexCube();
 	bool rendered;
-	int num_indices = 18;
+	
 
 public:
 
