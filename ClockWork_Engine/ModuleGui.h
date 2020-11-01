@@ -70,6 +70,12 @@ public:
 	bool viewconsole;
 	bool console = false;
 	bool about;
+	bool wireframe;
+	bool cube;
+	bool pyramid;
+	bool cylinder;
+	bool sphere;
+	bool showmaterial;
 	bool show_another_window = false;
 	void RequestBrowser(const char*);
 	void ClearLog();
@@ -87,6 +93,7 @@ public:
 	bool fulldesktop;
 	bool vertexlines;
 	bool facelines;
+	bool check;
 	float brightness;
 	const char* GetName() const;
 	const char* name;

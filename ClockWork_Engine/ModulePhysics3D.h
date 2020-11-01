@@ -22,6 +22,6 @@ public:
 private:
 
 	bool debug;
-
+	GLuint texture_id;
 	DebugDrawer* debug_draw;
 };

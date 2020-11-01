@@ -1,9 +1,10 @@
 #include "Application.h"
 #include "Globals.h"
+#include "glew/include/glew.h"
 #include <gl/GL.h>
 #include <gl/GLU.h>
 #include "Primitive.h"
-#include "glut/glut.h"
+//#include "glut/glut.h"
 
 #pragma comment (lib, "glut/glut32.lib")
 
@@ -104,14 +105,14 @@ void Primitive::Scale(float x, float y, float z)
 }
 
 // CUBE ============================================
-Cube::Cube(const vec3& _size, float mass) : Primitive(), size(_size)
+Cube::Cube() : Primitive(), size(1.0f, 1.0f, 1.0f)
 {
 	type = PrimitiveTypes::Primitive_Cube;
 }
 
-vec3 Cube::GetSize() const
+Cube::Cube(float sizeX, float sizeY, float sizeZ) : Primitive(), size(sizeX, sizeY, sizeZ)
 {
-	return size;
+	type = PrimitiveTypes::Primitive_Cube;
 }
 
 void Cube::InnerRender() const
@@ -162,60 +163,51 @@ void Cube::InnerRender() const
 }
 
 // SPHERE ============================================
-Sphere::Sphere(float _radius, float mass) : Primitive(), radius(_radius)
+Sphere::Sphere() : Primitive(), radius(1.0f)
 {
 	type = PrimitiveTypes::Primitive_Sphere;
 }
 
-float Sphere::GetRadius() const
+Sphere::Sphere(float radius) : Primitive(), radius(radius)
 {
-	return radius;
+	type = PrimitiveTypes::Primitive_Sphere;
 }
 
 void Sphere::InnerRender() const
 {
-	glutSolidSphere(radius, 25, 25);
+	
 }
 
 
 // CYLINDER ============================================
-Cylinder::Cylinder(float radius, float height, float mass) : Primitive(), radius(radius), height(height)
+Cylinder::Cylinder() : Primitive(), radius(1.0f), height(1.0f)
 {
 	type = PrimitiveTypes::Primitive_Cylinder;
 }
 
-float Cylinder::GetRadius() const
+Cylinder::Cylinder(float radius, float height) : Primitive(), radius(radius), height(height)
 {
-	return radius;
-}
-
-float Cylinder::GetHeight() const
-{
-	return height;
+	type = PrimitiveTypes::Primitive_Cylinder;
 }
 
 void Cylinder::InnerRender() const
 {
-	glPushMatrix();
-	mat4x4 rotateMat = IdentityMatrix;
-	rotateMat.rotate(90.f, vec3(0, 0, 1));
-	glMultMatrixf(&rotateMat);
 	int n = 30;
 
 	// Cylinder Bottom
 	glBegin(GL_POLYGON);
-	
-	for(int i = 360; i >= 0; i -= (360 / n))
+
+	for (int i = 360; i >= 0; i -= (360 / n))
 	{
 		float a = i * M_PI / 180; // degrees to radians
-		glVertex3f(-height*0.5f, radius * cos(a), radius * sin(a));
+		glVertex3f(-height * 0.5f, radius * cos(a), radius * sin(a));
 	}
 	glEnd();
 
 	// Cylinder Top
 	glBegin(GL_POLYGON);
 	glNormal3f(0.0f, 0.0f, 1.0f);
-	for(int i = 0; i <= 360; i += (360 / n))
+	for (int i = 0; i <= 360; i += (360 / n))
 	{
 		float a = i * M_PI / 180; // degrees to radians
 		glVertex3f(height * 0.5f, radius * cos(a), radius * sin(a));
@@ -224,16 +216,16 @@ void Cylinder::InnerRender() const
 
 	// Cylinder "Cover"
 	glBegin(GL_QUAD_STRIP);
-	for(int i = 0; i < 480; i += (360 / n))
+	for (int i = 0; i < 480; i += (360 / n))
 	{
 		float a = i * M_PI / 180; // degrees to radians
 
-		glVertex3f(height*0.5f,  radius * cos(a), radius * sin(a) );
-		glVertex3f(-height*0.5f, radius * cos(a), radius * sin(a) );
+		glVertex3f(height * 0.5f, radius * cos(a), radius * sin(a));
+		glVertex3f(-height * 0.5f, radius * cos(a), radius * sin(a));
 	}
 	glEnd();
-	glPopMatrix();
 }
+
 
 // LINE ==================================================
 Line::Line() : Primitive(), origin(0, 0, 0), destination(1, 1, 1)
@@ -241,19 +233,9 @@ Line::Line() : Primitive(), origin(0, 0, 0), destination(1, 1, 1)
 	type = PrimitiveTypes::Primitive_Line;
 }
 
-Line::Line(const vec3& A, const vec3& B) : Primitive(), origin(A), destination(B)
+Line::Line(float x, float y, float z) : Primitive(), origin(0, 0, 0), destination(x, y, z)
 {
 	type = PrimitiveTypes::Primitive_Line;
-}
-
-vec3 Line::GetOrigin() const
-{
-	return origin;
-}
-
-vec3 Line::GetDestination() const
-{
-	return destination;
 }
 
 void Line::InnerRender() const
@@ -271,14 +253,14 @@ void Line::InnerRender() const
 }
 
 // PLANE ==================================================
-Plane::Plane(const vec3& _normal) : Primitive(), normal(_normal)
+Plane::Plane() : Primitive(), normal(0, 1, 0), constant(1)
 {
 	type = PrimitiveTypes::Primitive_Plane;
 }
 
-vec3 Plane::GetNormal() const
+Plane::Plane(float x, float y, float z, float d) : Primitive(), normal(x, y, z), constant(d)
 {
-	return normal;
+	type = PrimitiveTypes::Primitive_Plane;
 }
 
 void Plane::InnerRender() const
@@ -286,6 +268,7 @@ void Plane::InnerRender() const
 	glLineWidth(1.0f);
 
 	glBegin(GL_LINES);
+
 	float d = 200.0f;
 
 	for (float i = -d; i <= d; i += 1.0f)

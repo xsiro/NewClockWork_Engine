@@ -26,7 +26,8 @@ public:
 	ModuleSceneIntro* scene;
 	ModulePhysics3D* physics;
 	ModuleGui* gui;
-	ModuleMeshLoader* mesh_loader;
+	//ModuleMeshLoader* mesh_loader;
+	ModuleImporter* importer;
 	bool					renderPrimitives;
 private:
 

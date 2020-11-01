@@ -26,7 +26,8 @@ Application::Application()
 	renderer3D = new ModuleRenderer3D(this);
 	camera = new ModuleCamera3D(this);
 	physics = new ModulePhysics3D(this);
-	mesh_loader = new ModuleMeshLoader(this);
+	//mesh_loader = new ModuleMeshLoader(this);
+	importer = new ModuleImporter(this);
 	
 
 
@@ -42,8 +43,8 @@ Application::Application()
 	AddModule(input);
 	AddModule(gui);
 	AddModule(physics);
-	AddModule(mesh_loader);
-	
+	//AddModule(mesh_loader);
+	AddModule(importer);
 	// Scenes
 	AddModule(scene);
 	

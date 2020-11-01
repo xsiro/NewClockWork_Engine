@@ -3,6 +3,12 @@
 #include "Globals.h"
 #include "glmath.h"
 #include "Light.h"
+#include "ModuleImporter.h"
+
+typedef void* SDL_GLContext;
+struct Mesh;
+typedef unsigned int GLuint;
+typedef signed char GLbyte;
 
 #define MAX_LIGHTS 8
 
@@ -21,6 +27,7 @@ public:
 	void LoadFBXBuffer();
 	void DrawVertexNormalLines();
 	void DrawFaceNormalLines();
+	void LoadTextures();
 	void OnResize(int width, int height);
 	void SetDepthtest(bool state);
 	void SetCullface(bool state);
@@ -30,7 +37,7 @@ public:
 	void CreateCube();
 	void CreateVertexCube();
 	void CreateIndexCube();
-
+	bool rendered;
 	int num_indices = 18;
 
 public:
@@ -39,5 +46,7 @@ public:
 	SDL_GLContext context;
 	mat3x3 NormalMatrix;
 	mat4x4 ModelMatrix, ViewMatrix, ProjectionMatrix;
-	
+	Mesh* mesh;
+	GLuint texture_id;
+	GLbyte checkImage[64][64][4];
 };

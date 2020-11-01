@@ -2,7 +2,10 @@
 #include "Application.h"
 #include "ModuleSceneIntro.h"
 #include "Primitive.h"
+#include "imgui.h"
+#include "ModuleGui.h"
 
+class ComponentMesh;
 
 ModuleSceneIntro::ModuleSceneIntro(Application* app, bool start_enabled) : Module(app, start_enabled)
 {
@@ -36,24 +39,42 @@ bool ModuleSceneIntro::CleanUp()
 // Update
 update_status ModuleSceneIntro::Update(float dt)
 {
-	Plane p(vec3(0, 1, 0));
+	Plane p(0, 0, 1, 0);
 	p.axis = true;
 	p.Render();
 
 
-	for (uint n = 0; n < primitives.size(); n++)
+
+	Cube cube(1.0f, 1.0f, 1.0f);
+	if (App->gui->wireframe == true) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	else if (App->gui->wireframe == false) {
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+	if (App->gui->cube) {
+		ComponentMesh CreateCubeDirect();
+	}
+
+	if (App->gui->pyramid)
 	{
-		primitives[n]->Update();
+		ComponentMesh CreatePyramid();
+	}
+
+	if (App->gui->cylinder)
+	{
+		ComponentMesh CreateCylinder();
+	}
+
+	if (App->gui->sphere)
+	{
+		ComponentMesh CreateSphere();
 	}
 
 	return UPDATE_CONTINUE;
 }
 
-update_status ModuleSceneIntro::PostUpdate(float dt)
+GameObject* ModuleSceneIntro::CreateGameObject(GameObject* GameObject) 
 {
-	for (uint n = 0; n < primitives.size(); n++)
-	{
-		primitives[n]->Render();
-	}
-	return UPDATE_CONTINUE;
+	return GameObject;
 }

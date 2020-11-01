@@ -3,7 +3,7 @@
 #include "Globals.h"
 
 
-class Primitive;
+class GameObject;
 
 class ModuleSceneIntro : public Module
 {
@@ -13,11 +13,12 @@ public:
 	
 	bool Start();
 	update_status Update(float dt) override;
-	update_status PostUpdate(float dt) override;
+
 
 	bool CleanUp();
+	GameObject* CreateGameObject(GameObject* GameObject);
 
 private:
 
-	std::vector<Primitive*> primitives;
+	std::vector<GameObject*> primitives;
 };

@@ -4,7 +4,6 @@
 #include "ModuleGui.h"
 #include "ModuleWindow.h"
 #include "Primitive.h"
-
 #include "glew/include/glew.h"
 #include "SDL/include/SDL_opengl.h"
 #include <stdio.h>
@@ -12,7 +11,8 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_internal.h"
-#include "gl3w.h"
+
+
 
 
 
@@ -76,7 +76,7 @@ bool ModuleGui::Init()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);*/
 
-#if defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
+#if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
 	bool err = glewInit() != 0;
 #endif
 	if (err)
