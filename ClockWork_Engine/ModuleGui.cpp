@@ -36,14 +36,13 @@ ModuleGui::ModuleGui(Application* app, bool start_enabled) : Module(app, start_e
 	cullface = false;
 	lighting = false;
 	material = false;
-	texture2D = true;
 	cubemap = true;
 	polygonssmooth = false;
 
 	wireframe = false;
 	vertexlines = false;
 	facelines = false;
-	checker = false;
+	check = false;
 
 	viewconfig = true;
 	console = true;
@@ -148,16 +147,21 @@ update_status ModuleGui::Update(float dt)
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem("Console"))
-			{
-				console = !console;
-			}
+			
 			if (ImGui::MenuItem("Exit")) { return UPDATE_STOP; }
 
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Options"))
+		if (ImGui::BeginMenu("View"))
 		{
+			if (ImGui::MenuItem("Console"))
+			{
+				console = !console;
+			}
+			if (ImGui::MenuItem("Inspector"))
+			{
+				inspector = !inspector;
+			}
 			if (ImGui::MenuItem("Configuration"))
 			{
 				viewconfig = !viewconfig;
@@ -166,7 +170,7 @@ update_status ModuleGui::Update(float dt)
 		}
 		if (ImGui::BeginMenu("Help"))
 		{
-			if (ImGui::MenuItem("GitHub")) RequestBrowser("https://github.com/xsiro/ClockWork_Engine");
+			if (ImGui::MenuItem("GitHub")) RequestBrowser("https://github.com/xsiro/NewClockWork_Engine");
 			{
 				ImGui::EndMenu();
 			}
@@ -175,13 +179,14 @@ update_status ModuleGui::Update(float dt)
 		{
 			if (ImGui::MenuItem("About")) about = !about;
 			{
-				ImGui::Text("ClockWorkEngine is developed by Daniel Ruiz & Pol Cortés");
+				ImGui::Text("ClockWorkEngine is developed by Daniel Ruiz & Pol Cortes");
 				ImGui::Text("This engine has been coded in C++");
 				ImGui::Text("Libraries:");
 				ImGui::Text("OpenGL v2.1");
 				ImGui::Text("Glew v7.0");
 				ImGui::Text("MathGeoLib v1.5");
 				ImGui::Text("PhysFS v3.0.2");
+				ImGui::Text("Assimp v3.1.1");
 
 				ImGui::Text("");
 
@@ -189,7 +194,7 @@ update_status ModuleGui::Update(float dt)
 				ImGui::Text("");
 				ImGui::Text("MIT License");
 				ImGui::Text("");
-				ImGui::Text("Copyright (c) 2020 [Daniel Ruiz & Pol Cortés]");
+				ImGui::Text("Copyright (c) 2020 [Daniel Ruiz & Pol Cortes]");
 				ImGui::Text("");
 				ImGui::Text("Permission is hereby granted, free of charge, to any person obtaining a copy");
 				ImGui::Text("of this software and associated documentation files (the 'Software'), to deal");
@@ -232,7 +237,7 @@ update_status ModuleGui::Update(float dt)
 			ImGui::TextColored({ 1.0f, 1.0f, 0.0f, 1.0f }, "%s", App->importer->GetMeshFileName());
 			ImGui::Separator();
 			ImGui::Text("General");
-
+			ImGui::Text("");
 			if (ImGui::Checkbox("Wireframe", &wireframe));
 
 			if (ImGui::Checkbox("See Vertex Lines (Blue)", &vertexlines));
@@ -242,16 +247,15 @@ update_status ModuleGui::Update(float dt)
 			if (ImGui::Checkbox("Depth Test", &depthtest)) {
 				App->renderer3D->SetDepthtest(depthtest);
 			}
-			ImGui::SameLine();
 			if (ImGui::Checkbox("Cull Face", &cullface)) {
 				App->renderer3D->SetCullface(cullface);
 			}
-			ImGui::SameLine();
 			if (ImGui::Checkbox("Lightning", &lighting)) {
 				App->renderer3D->SetLighting(lighting);
 			}
-
-			ImGui::Text("Polygons");
+			ImGui::Text("");
+			ImGui::Text("Polygons smoothing");
+			ImGui::Text("");
 			if (ImGui::Checkbox("Polygons smooth", &polygonssmooth))
 			{
 				App->renderer3D->SetPolygonssmooth(polygonssmooth);
@@ -259,32 +263,17 @@ update_status ModuleGui::Update(float dt)
 		}
 		if (ImGui::CollapsingHeader("Material"))
 		{
-			ImGui::Separator();
-			ImGui::Text("File:");
-			ImGui::SameLine();
-			ImGui::TextColored({ 1.0f, 1.0f, 0.0f, 1.0f }, "%s", App->importer->GetMaterialFileName());
-			ImGui::Separator();
-
-			ImGui::BulletText("Color");
-			if (ImGui::Checkbox("Color Material", &material)) {
-				App->renderer3D->SetColormaterial(material);
-			}
-
-			ImGui::BulletText("Textures");
-			if (ImGui::Checkbox("2D", &texture2D)) {
-				App->renderer3D->SetTexture2D(texture2D);
-			}
-
-			ImGui::SameLine();
-			if (ImGui::Checkbox("Cube Map", &cubemap)) {
+			ImGui::Text("Textures");
+			ImGui::Text("");
+			if (ImGui::Checkbox("Cube Map", &cubemap)) 
+			{
 				App->renderer3D->SetCubemap(cubemap);
 			}
 
-			if (ImGui::Checkbox("Checker Mode", &checker));
+			if (ImGui::Checkbox("Checker Mode", &check));
 		}
 		ImGui::End();
 	}
-
 	if (viewconfig)
 	{
 		ImGui::Begin("Configuration", &viewconfig);
