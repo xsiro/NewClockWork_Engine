@@ -209,7 +209,7 @@ void ModuleRenderer3D::RenderFBX() {
 	{
 		if (!rendered)
 		{
-			App->importer->LoadTexture("Baker_house.png");
+			App->importer->LoadTexture("Assets/Baker_house.png");
 			rendered = true;
 
 		}
