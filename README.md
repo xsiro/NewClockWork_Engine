@@ -1,4 +1,4 @@
-ClockWorkEngine is an Engine whith these features:
+ClockWorkEngine is an Engine with these features:
 
 ## Features
 
