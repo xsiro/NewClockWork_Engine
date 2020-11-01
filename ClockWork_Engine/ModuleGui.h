@@ -73,6 +73,10 @@ public:
 	bool cullface;
 	bool lighting;
 	bool polygonssmooth;
+	bool material;
+	bool texture2D;
+	bool cubemap;
+	bool checker;
 	bool console = false;
 	bool about;
 	bool wireframe;

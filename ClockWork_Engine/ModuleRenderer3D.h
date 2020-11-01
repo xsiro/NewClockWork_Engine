@@ -31,6 +31,7 @@ public:
 	void SetDepthtest(bool state);
 	void SetCullface(bool state);
 	void SetLighting(bool state);
+	void SetCubemap(bool state);
 	void SetColormaterial(bool state);
 	void SetTexture2D(bool state);
 	void CreateCube();

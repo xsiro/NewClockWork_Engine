@@ -105,6 +105,26 @@ bool ModuleRenderer3D::Init()
 		lights[0].Active(true);
 		glEnable(GL_LIGHTING);
 		glEnable(GL_COLOR_MATERIAL);
+
+		mesh = &App->importer->myMesh;
+
+		glGenBuffers(1, (GLuint*)&mesh->id_vertex);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->id_vertex);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * mesh->num_vertex * 3, mesh->vertex, GL_STATIC_DRAW);
+
+		glGenBuffers(1, (GLuint*)&mesh->id_index);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->id_index);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * mesh->num_index, mesh->index, GL_STATIC_DRAW);
+
+		glGenBuffers(1, (GLuint*)&mesh->id_normals);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->id_normals);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(uint) * mesh->num_normals * 3, mesh->normals, GL_STATIC_DRAW);
+
+		glGenBuffers(1, (GLuint*)&mesh->id_texcoords);
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->id_texcoords);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(float) * mesh->num_texcoords * 2, mesh->texcoords, GL_STATIC_DRAW);
+
+		LoadTextures();
 	}
 
 	// Projection matrix for
@@ -218,15 +238,15 @@ void ModuleRenderer3D::RenderFBX() {
 	glBindBuffer(GL_ARRAY_BUFFER, mesh->id_vertex);
 	glVertexPointer(3, GL_FLOAT, 0, NULL);
 
-	/*glBindBuffer(GL_ARRAY_BUFFER, mesh->id_normals);*/
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->id_normals);
 	glNormalPointer(GL_FLOAT, 0, NULL);
 
-	/*glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->id_index);*/
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mesh->id_index);
 
-	/*glBindBuffer(GL_ARRAY_BUFFER, mesh->id_texcoords);*/
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->id_texcoords);
 	glTexCoordPointer(2, GL_FLOAT, 0, NULL);
 
-	//glDrawElements(GL_TRIANGLES, mesh->num_index, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, mesh->num_index, GL_UNSIGNED_INT, NULL);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -363,6 +383,12 @@ void ModuleRenderer3D::CreateCube()
 	glVertex3f(0.f, 10.f, 0.f);
 	glEnd();
 	glLineWidth(1.0f);
+}
+void ModuleRenderer3D::SetCubemap(bool state) {
+	if (state == false)
+		glEnable(GL_TEXTURE_CUBE_MAP);
+	else if (state == true)
+		glDisable(GL_TEXTURE_CUBE_MAP);
 }
 
 void ModuleRenderer3D::SetPolygonssmooth(bool state) {
