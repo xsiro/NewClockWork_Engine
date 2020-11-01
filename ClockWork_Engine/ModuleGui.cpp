@@ -5,11 +5,14 @@
 #include "ModuleWindow.h"
 #include "Primitive.h"
 
+#include "gl3w.h"
 
 #include <stdio.h>
+#include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
-#include "gl3w.h"
+#include "imgui_internal.h"
+
 
 
 ModuleGui::ModuleGui(Application* app, bool start_enabled) : Module(app, start_enabled)
@@ -46,27 +49,31 @@ bool ModuleGui::Awake()
 }
 
 // Called before the first frame
-bool ModuleGui::Start()
+bool ModuleGui::Init()
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	(void)io;
+	
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	ImGui::StyleColorsDark(); 
 
 	// Setting context
 	gl_context = SDL_GL_CreateContext(App->window->window);
 	SDL_GL_MakeCurrent(App->window->window, gl_context);
-
+	ImGui_ImplOpenGL3_Init();
+	ImGui_ImplSDL2_InitForOpenGL(App->window->window, App->renderer3D->context);
 	//TEST
-	io = &ImGui::GetIO(); (void)io;
-	//TEST
+	
+	
 
 	//TEST
 	// GL 3.0 + GLSL 130
-	const char* glsl_version = "#version 130";
+	/*const char* glsl_version = "#version 130";
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);*/
 
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
 	bool err = gl3wInit() != 0;
@@ -82,12 +89,13 @@ bool ModuleGui::Start()
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
-	ImGui::StyleColorsDark(); 
+	
 	
 	//const char* glsl_version = "#version 130";
+	
 
-	ImGui_ImplSDL2_InitForOpenGL(App->window->window, gl_context);
-	ImGui_ImplOpenGL3_Init(glsl_version);
+	//ImGui_ImplSDL2_InitForOpenGL(App->window->window, gl_context);
+	//ImGui_ImplOpenGL3_Init(glsl_version);
 
 	// Load Fonts
 	// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them.
@@ -96,34 +104,29 @@ bool ModuleGui::Start()
 	// - The fonts will be rasterized at a given size (w/ oversampling) and stored into a texture when calling ImFontAtlas::Build()/GetTexDataAsXXXX(), which ImGui_ImplXXXX_NewFrame below will call.
 	// - Read 'misc/fonts/README.txt' for more instructions and details.
 	// - Remember that in C/C++ if you want to include a backslash \ in a string literal 
-	io->Fonts->AddFontDefault();
-	io->Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 14);
+	/*io.Fonts->AddFontDefault();
+	io.Fonts->AddFontFromFileTTF("misc/fonts/Roboto-Medium.ttf", 14);
 
-	App->renderer3D->OnResize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	App->renderer3D->OnResize(SCREEN_WIDTH, SCREEN_HEIGHT);*/
 	return true;
 }
 
 // Update all guis
 update_status ModuleGui::PreUpdate(float dt)
 {
-	
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplSDL2_NewFrame(App->window->window);
+	ImGui::NewFrame();
 	return  UPDATE_CONTINUE;
 }
 
 // Called every frame
 update_status ModuleGui::Update(float dt)
 {
-	return  UPDATE_CONTINUE;
-}
-
-// Called after all Updates
-update_status ModuleGui::PostUpdate(float dt)
-{
+	Dock(dockingwindow);
 	bool ret = true;
 	// Start the Dear ImGui frame
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplSDL2_NewFrame(App->window->window);
-	ImGui::NewFrame();
+	
 
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -190,7 +193,7 @@ update_status ModuleGui::PostUpdate(float dt)
 				
 			}
 
-
+			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
 
@@ -365,15 +368,28 @@ update_status ModuleGui::PostUpdate(float dt)
 
 
 	// Rendering
-	ImGui::Render();
-	glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
+	
+	//glViewport(0, 0, (int)io->DisplaySize.x, (int)io->DisplaySize.y);
 	//glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 	//glClear(GL_COLOR_BUFFER_BIT);
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	
 	//SDL_GL_SwapWindow(App->window->window);	
 	return  UPDATE_CONTINUE;
 }
 
+// Called after all Updates
+update_status ModuleGui::PostUpdate(float dt)
+{
+    ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	return  UPDATE_CONTINUE;
+}
+
+//void ModuleGui::Draw()
+//{
+//	ImGui::Render();
+//	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+//}
 
 // Called before quitting
 bool ModuleGui::CleanUp()
@@ -383,8 +399,10 @@ bool ModuleGui::CleanUp()
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
-	SDL_GL_DeleteContext(gl_context);
-
+	//SDL_GL_DeleteContext(gl_context);
+	log_record.clear();
+	fps_log.clear();
+	ms_log.clear();
 	return true;
 }
 
@@ -409,7 +427,63 @@ void ModuleGui::ClearLog()
 	logs.clear();
 }
 
+void ModuleGui::AddLogText(std::string incoming_text) 
+{
 
+	if (&log_record != NULL) {
+		log_record.push_back(incoming_text);
+	}
+
+}
+
+update_status ModuleGui::Dock(bool* p_open)
+{
+	update_status ret = UPDATE_CONTINUE;
+
+	static bool opt_fullscreen = true;
+	static bool opt_padding = false;
+	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	if (opt_fullscreen)
+	{
+		ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(viewport->GetWorkPos());
+		ImGui::SetNextWindowSize(viewport->GetWorkSize());
+		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+		window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+	}
+	else
+	{
+		dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+	}
+
+	if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		window_flags |= ImGuiWindowFlags_NoBackground;
+
+	if (!opt_padding)
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::Begin("DockSpace Demo", p_open, window_flags);
+	if (!opt_padding)
+		ImGui::PopStyleVar();
+
+	if (opt_fullscreen)
+		ImGui::PopStyleVar(2);
+
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+	{
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+	}
+
+	ImGui::End();
+
+	return ret;
+}
 
 const char* ModuleGui::GetName() const
 {

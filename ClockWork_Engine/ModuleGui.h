@@ -4,6 +4,7 @@
 #include "Module.h"
 #include <list>
 #include <string>
+#include <vector>
 #include "imgui.h"
 
 #include "SDL/include/SDL_rect.h"
@@ -41,7 +42,7 @@ public:
 	bool Awake();
 
 	// Call before first frame
-	bool Start();
+	bool Init();
 
 	// Called before all Updates
 	update_status PreUpdate(float dt);
@@ -54,10 +55,9 @@ public:
 
 	// Called before quitting
 	bool CleanUp();
-
-
-	void ConsoleMenu();
-	bool DrawConsole(ImGuiIO& io);
+	void Draw();
+	update_status Dock(bool* p_open);
+	
 	
 
 public:
@@ -72,6 +72,7 @@ public:
 	bool show_another_window = false;
 	void RequestBrowser(const char*);
 	void ClearLog();
+	void AddLogText(std::string incoming_text);
 	void ConsoleLog(char* log);
 	bool show_configuration_window;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -92,10 +93,10 @@ public:
 
 
 	SDL_GLContext gl_context; 
-	ImGuiIO* io = nullptr;
+	//ImGuiIO* io = nullptr;
 	std::vector<float> fps_log;
 	std::vector<float> ms_log;
-
+	bool* dockingwindow;
 	std::vector<std::string> log_record;
 	std::vector<char*> logs;
 
