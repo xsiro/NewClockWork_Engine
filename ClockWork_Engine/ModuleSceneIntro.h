@@ -18,7 +18,7 @@ public:
 	bool CleanUp();
 	GameObject* CreateGameObject(GameObject* GameObject);
 
-private:
 
-	std::vector<GameObject*> primitives;
+	GameObject* selected_object = nullptr;
+	std::vector<GameObject*> game_objects;
 };

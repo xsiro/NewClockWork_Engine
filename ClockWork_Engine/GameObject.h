@@ -2,6 +2,7 @@
 #include "Globals.h"
 #include <vector>
 #include <iostream>
+#include <string>
 
 class ModuleComponent;
 enum class ComponentType;
@@ -23,4 +24,5 @@ public:
 	bool active;
 	std::string name;
 	std::vector<ModuleComponent*> components;
+	std::vector<GameObject*> comp;
 };

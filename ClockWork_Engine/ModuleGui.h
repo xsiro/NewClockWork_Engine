@@ -69,6 +69,7 @@ public:
 	bool viewconfig;
 	bool viewconsole;
 	bool inspector;
+	bool hierarchy;
 	bool depthtest;
 	bool cullface;
 	bool lighting;

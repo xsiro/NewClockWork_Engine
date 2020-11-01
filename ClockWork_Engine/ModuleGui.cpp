@@ -4,6 +4,11 @@
 #include "ModuleGui.h"
 #include "ModuleWindow.h"
 #include "Primitive.h"
+#include "ModuleSceneIntro.h"
+#include "ModuleRenderer3D.h"
+#include "ModuleImporter.h"
+#include "GameObject.h"
+#include "ModuleComponent.h"
 #include "glew/include/glew.h"
 #include "SDL/include/SDL_opengl.h"
 #include <stdio.h>
@@ -168,6 +173,7 @@ update_status ModuleGui::Update(float dt)
 			}
 			ImGui::EndMenu();
 		}
+
 		if (ImGui::BeginMenu("Help"))
 		{
 			if (ImGui::MenuItem("GitHub")) RequestBrowser("https://github.com/xsiro/NewClockWork_Engine");
@@ -224,7 +230,13 @@ update_status ModuleGui::Update(float dt)
 		ImGui::EndMainMenuBar();
 
 	}
+	if (hierarchy)
+	{
+		ImGui::Begin("Hierarchy", &hierarchy);
 
+
+		ImGui::End();
+	}
 	if (inspector)
 	{
 		ImGui::Begin("Inspector", &inspector);
@@ -446,6 +458,7 @@ bool ModuleGui::CleanUp()
 	
 	return true;
 }
+
 
 void ModuleGui::RequestBrowser(const char* path)
 {
