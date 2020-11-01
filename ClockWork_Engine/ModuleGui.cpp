@@ -1,12 +1,12 @@
+#include "Globals.h"
 #include "Application.h"
 #include "ModuleInput.h"
 #include "ModuleGui.h"
-#include "ModuleAudio.h"
 #include "ModuleWindow.h"
 #include "Primitive.h"
 
 #include "gl3w.h"
-
+#include "SDL\include\SDL_opengl.h"
 #include <stdio.h>
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
@@ -132,7 +132,12 @@ update_status ModuleGui::Update(float dt)
 	{
 		if (ImGui::BeginMenu("File"))
 		{
+			if (ImGui::MenuItem("Console"))
+			{
+				console = !console;
+			}
 			if (ImGui::MenuItem("Exit")) { return UPDATE_STOP; }
+			
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Options"))
@@ -379,9 +384,7 @@ bool ModuleGui::CleanUp()
 	ImGui_ImplSDL2_Shutdown();
 	ImGui::DestroyContext();
 	//SDL_GL_DeleteContext(gl_context);
-	log_record.clear();
-	fps_log.clear();
-	ms_log.clear();
+	
 	return true;
 }
 

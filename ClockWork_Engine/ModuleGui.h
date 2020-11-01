@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include "imgui.h"
+#include "glmath.h"
 
 #include "SDL/include/SDL_rect.h"
 #include "SDL/include/SDL_video.h"
@@ -55,7 +56,7 @@ public:
 
 	// Called before quitting
 	bool CleanUp();
-	void Draw();
+	
 	update_status Dock(bool* p_open);
 	
 	
@@ -67,7 +68,7 @@ public:
 	bool mainwindow;
 	bool viewconfig;
 	bool viewconsole;
-	bool console;
+	bool console = false;
 	bool about;
 	bool show_another_window = false;
 	void RequestBrowser(const char*);
