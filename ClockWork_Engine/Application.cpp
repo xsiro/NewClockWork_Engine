@@ -13,7 +13,7 @@
 #include "ModulePhysics3D.h"
 #include "ModuleMeshLoader.h"
 
-#include "gl3w.h"
+#include "glew/include/glew.h"
 #include <functional>
 
 Application::Application()
@@ -68,7 +68,7 @@ bool Application::Init()
 
 	// Call Init() in all modules
 	std::list<Module*>::iterator item = modules.begin();
-	gl3wInit();
+	glewInit();
 
 	while(item != modules.end() && ret == true)
 	{

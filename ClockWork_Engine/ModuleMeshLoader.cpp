@@ -1,10 +1,10 @@
 #include "Application.h"
 #include "ModuleMeshLoader.h"
 
-/*#include "OpenGL.h"
+#include "gl3w.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
-#include "imgui_impl_opengl3.h"*/
+#include "imgui_impl_opengl3.h"
 
 #include "Assimp/include/cimport.h"
 #include "Assimp/include/scene.h"
@@ -102,6 +102,17 @@ void ModuleMeshLoader::LoadFBX(const char* path) {
 						memcpy(&m.indices[j * 3], scene->mMeshes[i]->mFaces[j].mIndices, 3 * sizeof(uint));
 				}
 			}
+			
+			// This should get the buffers but it's not working
+			/*glGenBuffers(1, (GLuint*)&m.id_vertex);
+			glBindBuffer(GL_ARRAY_BUFFER, m.id_vertex);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(float3) * m.num_vertices, m.vertices, GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			glGenBuffers(1, (GLuint*)&m.id_index);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m.id_index);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * 3 * m.num_indices, m.indices, GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);*/
 		}
 
 		aiReleaseImport(scene);
