@@ -20,7 +20,7 @@ public:
 	void AddComponent(ModuleComponent* component);
 
 public:
-
+	GameObject* parent;
 	bool active;
 	std::string name;
 	std::vector<ModuleComponent*> components;

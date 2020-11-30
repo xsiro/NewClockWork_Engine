@@ -53,6 +53,7 @@ ModuleGui::ModuleGui(Application* app, bool start_enabled) : Module(app, start_e
 	console = true;
 	about = false;
 	inspector = true;
+	hierarchy = true;
 }
 
 // Destructor
@@ -171,6 +172,10 @@ update_status ModuleGui::Update(float dt)
 			{
 				viewconfig = !viewconfig;
 			}
+			if (ImGui::MenuItem("Hierarchy"))
+			{
+				hierarchy = !hierarchy;
+			}
 			ImGui::EndMenu();
 		}
 
@@ -233,14 +238,38 @@ update_status ModuleGui::Update(float dt)
 	if (hierarchy)
 	{
 		ImGui::Begin("Hierarchy", &hierarchy);
-
-
+		if (ImGui::Button("Delete"))
+		{
+			App->scene->CleanUp();
+		}
+		Hierarchy();
 		ImGui::End();
 	}
 	if (inspector)
 	{
 		ImGui::Begin("Inspector", &inspector);
 		ImGui::Text("Inspector");
+		if (ImGui::CollapsingHeader("Transformation"))
+		{
+			ImGui::Separator();
+			vec3 position = { 0,0,0 };
+			vec3 rotation = { 0,0,0 };
+			vec3 scale = { 0,0,0 };
+			if (ImGui::DragFloat3("Position", &position, 0.1f))
+			{
+
+			}
+
+			if (ImGui::DragFloat3("Rotation", &rotation, 0.1f))
+			{
+
+			}
+
+			if (ImGui::DragFloat3("Scale", &scale, 0.1f))
+			{
+
+			}
+		}
 		if (ImGui::CollapsingHeader("Mesh"))
 		{
 			ImGui::Separator();
@@ -538,6 +567,28 @@ update_status ModuleGui::Dock(bool* p_open)
 
 	return ret;
 }
+
+void ModuleGui::Hierarchy()
+{
+
+	if (ImGui::TreeNode("GameObject")) {
+		for (size_t i = 0; i < App->scene->game_objects.size(); i = i + 2)
+		{
+			if (App->scene->game_objects[i]->parent != nullptr) continue;
+
+			if (ImGui::TreeNodeEx(App->scene->game_objects[i]->name.c_str(), ImGuiTreeNodeFlags_Leaf)) {
+				if (ImGui::IsItemClicked()) {
+					App->scene->selected_object = App->scene->game_objects[i];
+				}
+			}
+			ImGui::TreePop();
+		}
+		ImGui::TreePop();
+	}
+
+
+}
+
 
 const char* ModuleGui::GetName() const
 {
