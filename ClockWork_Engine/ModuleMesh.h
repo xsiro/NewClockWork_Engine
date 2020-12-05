@@ -3,9 +3,12 @@
 #include "glmath.h"
 #include <vector>
 #include "ModuleComponent.h"
-#include "Moduleimporter.h"
+
 
 class GameObject;
+class ModuleMaterial;
+typedef unsigned int GLuint;
+typedef unsigned char GLubyte;
 
 class ModuleMesh : public ModuleComponent
 {
@@ -13,7 +16,7 @@ public:
 
 	ModuleMesh();
 	~ModuleMesh();
-
+	virtual void Update();
 	void CreateCubeDirect();
 	void CreateCubeVertex();
 	void CreateCubeIndex();
@@ -25,10 +28,13 @@ public:
 	void LoadFBXBuffer();
 	void DrawVertexNormalLines();
 	void DrawFaceNormalLines();
-	void LoadingTextures();
-
+	
+	void LoadingCheckerTextures();
 
 public:
+
+	GLubyte checkerImage[64][64][4];
+	bool rendered;
 
 	uint id_index = 0; // index in VRAM
 	uint num_index = 0;
@@ -49,7 +55,10 @@ public:
 
 	uint id_vertex = 0; // unique vertex in VRAM
 	uint num_vertex = 0;
+	GLuint texture = 0;
+	GLuint texture_id;
 	float* vertex = nullptr;
-
-
+	bool reload = false;
 };
+
+

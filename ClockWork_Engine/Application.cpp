@@ -11,7 +11,7 @@
 #include "ModuleCamera3D.h"
 #include "ModuleSceneIntro.h"
 #include "ModulePhysics3D.h"
-#include "ModuleMeshLoader.h"
+#include "ModuleMesh.h"
 
 #include "glew/include/glew.h"
 #include <functional>
@@ -28,6 +28,7 @@ Application::Application()
 	physics = new ModulePhysics3D(this);
 	//mesh_loader = new ModuleMeshLoader(this);
 	importer = new ModuleImporter(this);
+	filesys = new FileSystem(this);
 	
 
 
@@ -45,6 +46,7 @@ Application::Application()
 	AddModule(physics);
 	//AddModule(mesh_loader);
 	AddModule(importer);
+	AddModule(filesys);
 	// Scenes
 	AddModule(scene);
 	
@@ -56,7 +58,7 @@ Application::Application()
 
 Application::~Application()
 {
-	std::list<Module*>::iterator item = modules.begin();
+	std::vector<Module*>::iterator item = modules.begin();
 	for (; item != modules.end(); item = next(item))
 		delete(*item);
 
@@ -68,7 +70,7 @@ bool Application::Init()
 	bool ret = true;
 
 	// Call Init() in all modules
-	std::list<Module*>::iterator item = modules.begin();
+	std::vector<Module*>::iterator item = modules.begin();
 	glewInit();
 
 	while(item != modules.end() && ret == true)
@@ -119,7 +121,7 @@ update_status Application::Update()
 	update_status ret = UPDATE_CONTINUE;
 	PrepareUpdate();
 	
-	std::list<Module*>::iterator item = modules.begin();
+	std::vector<Module*>::iterator item = modules.begin();
 
 	while(item != modules.end() && ret == UPDATE_CONTINUE)
 	{
@@ -150,7 +152,7 @@ update_status Application::Update()
 bool Application::CleanUp()
 {
 	bool ret = true;
-	std::list<Module*>::iterator item = modules.begin();
+	std::vector<Module*>::iterator item = modules.begin();
 
 
 	while(item != modules.end() && ret == true)

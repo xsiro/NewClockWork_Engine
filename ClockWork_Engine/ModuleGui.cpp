@@ -1,5 +1,6 @@
 #include "Globals.h"
 #include "Application.h"
+#include "glew/include/glew.h"
 #include "ModuleInput.h"
 #include "ModuleGui.h"
 #include "ModuleWindow.h"
@@ -9,7 +10,8 @@
 #include "ModuleImporter.h"
 #include "GameObject.h"
 #include "ModuleComponent.h"
-#include "glew/include/glew.h"
+#include <gl/GL.h>
+#include <gl/GLU.h>
 #include "SDL/include/SDL_opengl.h"
 #include <stdio.h>
 #include "imgui.h"
@@ -474,6 +476,13 @@ update_status ModuleGui::PostUpdate(float dt)
 //	ImGui::Render();
 //	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 //}
+
+void ModuleGui::Draw() {
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+}
 
 // Called before quitting
 bool ModuleGui::CleanUp()

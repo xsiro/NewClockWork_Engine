@@ -17,6 +17,7 @@ public:
 
 	ModuleComponent* GetComponent(ComponentType component);
 	ModuleComponent* CreateComponent(ComponentType type);
+	bool DeleteComponent(ModuleComponent* component);
 	void AddComponent(ModuleComponent* component);
 
 public:
@@ -24,5 +25,5 @@ public:
 	bool active;
 	std::string name;
 	std::vector<ModuleComponent*> components;
-	std::vector<GameObject*> comp;
+	std::vector<GameObject*> children;
 };

@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+#include "glew/include/glew.h"
 
 #include "Globals.h"
 #include "Timer.h"
@@ -11,7 +13,8 @@
 #include "ModuleSceneIntro.h"
 #include "ModulePhysics3D.h"
 #include "ModuleGui.h"
-#include "ModuleMeshLoader.h"
+#include "ModuleImporter.h"
+#include "FileSys.h"
 
 #include <list>
 
@@ -28,12 +31,13 @@ public:
 	ModuleGui* gui;
 	//ModuleMeshLoader* mesh_loader;
 	ModuleImporter* importer;
+	FileSystem* filesys;
 	bool					renderPrimitives;
 private:
 
 	Timer	ms_timer;
 	
-	std::list<Module*> modules;
+	std::vector<Module*> modules;
 
 public:
 

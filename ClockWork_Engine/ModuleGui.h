@@ -91,6 +91,7 @@ public:
 	void ClearLog();
 	void AddLogText(std::string incoming_text);
 	void ConsoleLog(char* log);
+	void Draw();
 	void Hierarchy();
 	bool show_configuration_window;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
