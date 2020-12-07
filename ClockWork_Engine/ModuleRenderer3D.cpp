@@ -150,7 +150,7 @@ update_status ModuleRenderer3D::PostUpdate(float dt)
 	{
 		DrawFaceNormalLines();
 	}*/
-	App->gui->Draw();
+	App->gui->PostUpdate(dt);
 	SDL_GL_SwapWindow(App->window->window);
 
 	return UPDATE_CONTINUE;

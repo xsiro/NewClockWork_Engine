@@ -1,7 +1,9 @@
 #pragma once
 #include "Module.h"
 #include "Globals.h"
+
 #include "imgui.h"
+
 
 
 class GameObject;
@@ -13,14 +15,12 @@ public:
 	~ModuleSceneIntro();
 	
 	bool Start();
-	update_status Update(float dt) override;
-
-
+	update_status Update(float dt) ;
 	bool CleanUp();
 	GameObject* CreateGameObject(GameObject* GameObject);
 
-
-	GameObject* selected_object = nullptr;
 	std::vector<GameObject*> game_objects;
+	GameObject* selected_object;
 	
+	std::string name;
 };

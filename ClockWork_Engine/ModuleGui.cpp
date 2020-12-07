@@ -43,7 +43,7 @@ ModuleGui::ModuleGui(Application* app, bool start_enabled) : Module(app, start_e
 	cullface = false;
 	lighting = false;
 	material = false;
-	cubemap = true;
+	cubemap = false;
 	polygonssmooth = false;
 
 	wireframe = false;
@@ -82,8 +82,8 @@ bool ModuleGui::Init()
 	ImGui::StyleColorsDark(); 
 
 	// Setting context
-	gl_context = SDL_GL_CreateContext(App->window->window);
-	SDL_GL_MakeCurrent(App->window->window, gl_context);
+	//gl_context = SDL_GL_CreateContext(App->window->window);
+	//SDL_GL_MakeCurrent(App->window->window, gl_context);
 	ImGui_ImplOpenGL3_Init();
 	ImGui_ImplSDL2_InitForOpenGL(App->window->window, App->renderer3D->context);
 	//TEST
@@ -234,6 +234,49 @@ update_status ModuleGui::Update(float dt)
 
 
 		}
+		/*if (ImGui::BeginMenu("Create"))
+		{
+			if (ImGui::MenuItem("Cube")) {
+				pyramid = false;
+				cylinder = false;
+				sphere = false;
+				cube = !cube;
+				if (cube)
+				{
+					LOG("Cube primitive created");
+				}
+			}
+			if (ImGui::MenuItem("Pyramid")) {
+				cube = false;
+				cylinder = false;
+				sphere = false;
+				pyramid = !pyramid;
+				if (pyramid)
+				{
+					LOG("Pyramid primitive created")
+				}
+			}
+			if (ImGui::MenuItem("Cylinder")) {
+				pyramid = false;
+				cube = false;
+				sphere = false;
+				cylinder = !cylinder;
+				if (cylinder)
+				{
+					LOG("Cylinder primitive created")
+				}
+			}
+			if (ImGui::MenuItem("Sphere")) {
+				pyramid = false;
+				cylinder = false;
+				cube = false;
+				sphere = !sphere;
+				if (sphere)
+				{
+					LOG("Sphere primitive created")
+				}
+			}
+		}*/
 		ImGui::EndMainMenuBar();
 
 	}
@@ -306,13 +349,15 @@ update_status ModuleGui::Update(float dt)
 		}
 		if (ImGui::CollapsingHeader("Material"))
 		{
-			ImGui::Text("Textures");
-			ImGui::Text("");
+			ImGui::Separator();
+			ImGui::Text("File:");
+			ImGui::SameLine();
+			ImGui::TextColored({ 1.0f, 1.0f, 0.0f, 1.0f }, "%s", App->importer->GetMaterialFileName());
+			ImGui::Separator();
 			if (ImGui::Checkbox("Cube Map", &cubemap)) 
 			{
 				App->renderer3D->SetCubemap(cubemap);
 			}
-
 			if (ImGui::Checkbox("Checker Mode", &check));
 		}
 		ImGui::End();
@@ -466,23 +511,18 @@ update_status ModuleGui::Update(float dt)
 // Called after all Updates
 update_status ModuleGui::PostUpdate(float dt)
 {
-    ImGui::Render();
+	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	return  UPDATE_CONTINUE;
 }
 
-//void ModuleGui::Draw()
-//{
-//	ImGui::Render();
-//	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+
+//void ModuleGui::Draw() {
+//
+//	
+//
 //}
-
-void ModuleGui::Draw() {
-
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-}
 
 // Called before quitting
 bool ModuleGui::CleanUp()
@@ -599,7 +639,3 @@ void ModuleGui::Hierarchy()
 }
 
 
-const char* ModuleGui::GetName() const
-{
-	return name;
-}

@@ -40,7 +40,7 @@ public:
 	void SetPolygonssmooth(bool state);
 	void CreateVertexCube();
 	void CreateIndexCube();
-	bool rendered;
+	
 	
 
 public:

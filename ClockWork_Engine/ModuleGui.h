@@ -78,6 +78,7 @@ public:
 	bool texture2D;
 	bool cubemap;
 	bool checker;
+	bool colormaterial;
 	bool console = false;
 	bool about;
 	bool wireframe;

@@ -1,11 +1,15 @@
 #include "Globals.h"
 #include "Application.h"
+#include "Module.h"
 #include "ModuleSceneIntro.h"
 #include "Primitive.h"
 #include "imgui.h"
 #include "ModuleGui.h"
+#include "ModuleMesh.h"
+#include "FileSys.h"
+#include "GameObject.h"
 
-class ComponentMesh;
+class ModuleMesh;
 
 ModuleSceneIntro::ModuleSceneIntro(Application* app, bool start_enabled) : Module(app, start_enabled)
 {
@@ -23,7 +27,8 @@ bool ModuleSceneIntro::Start()
 	App->camera->Move(vec3(1.0f, 1.0f, 0.0f));
 	App->camera->LookAt(vec3(0, 0, 0));
 	GameObject* house = App->importer->LoadFBX("Assets/BakerHouse.FBX");
-	App->importer->LoadTexture("Assets/BakerHouseIMG.png");
+	App->importer->LoadTexture("Assets/Baker_house.png");
+	CreateGameObject(house);
 
 	return ret;
 }
@@ -32,6 +37,12 @@ bool ModuleSceneIntro::Start()
 bool ModuleSceneIntro::CleanUp()
 {
 	LOG("Unloading Intro scene");
+	for (size_t i = 0; i < game_objects.size(); i++)
+	{
+		delete game_objects[i];
+		game_objects[i] = nullptr;
+	}
+	game_objects.clear();
 
 	return true;
 }
@@ -41,7 +52,7 @@ bool ModuleSceneIntro::CleanUp()
 // Update
 update_status ModuleSceneIntro::Update(float dt)
 {
-	Plane p(0, 0, 1, 0);
+	Plane p(0, 1, 0, 0);
 	p.axis = true;
 	p.Render();
 
@@ -55,28 +66,42 @@ update_status ModuleSceneIntro::Update(float dt)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	if (App->gui->cube) {
-		ComponentMesh CreateCubeDirect();
+		ModuleMesh* Cube = new ModuleMesh();
+		ModuleMesh CreateCubeDirect();
 	}
 
 	if (App->gui->pyramid)
 	{
-		ComponentMesh CreatePyramid();
+		ModuleMesh* Pyramid = new ModuleMesh();
+		ModuleMesh CreatePyramid();
 	}
 
 	if (App->gui->cylinder)
 	{
-		ComponentMesh CreateCylinder();
+		ModuleMesh* Cylinder = new ModuleMesh();
+		ModuleMesh CreateCylinder();
 	}
 
 	if (App->gui->sphere)
 	{
-		ComponentMesh CreateSphere();
+		ModuleMesh* Sphere = new ModuleMesh();
+		ModuleMesh CreateSphere();
+	}
+	for (size_t i = 0; i < game_objects.size(); i++)
+	{
+		game_objects[i]->Update();
 	}
 
 	return UPDATE_CONTINUE;
 }
 
-GameObject* ModuleSceneIntro::CreateGameObject(GameObject* GameObject) 
+GameObject* ModuleSceneIntro::CreateGameObject(GameObject* father) 
 {
-	return GameObject;
+	GameObject* newgo = new GameObject();
+	newgo->parent = father;
+	game_objects.push_back(newgo);
+
+	selected_object = father;
+
+	return newgo;
 }

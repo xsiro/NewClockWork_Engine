@@ -1,27 +1,12 @@
 #include "Application.h"
-#include "Globals.h"
-#include "Timer.h"
-#include "Module.h"
-#include "Primitive.h"
-#include "ModuleWindow.h"
-#include "ModuleInput.h"
-#include "ModuleAudio.h"
-#include "ModuleRenderer3D.h"
-#include "ModuleGui.h"
-#include "ModuleCamera3D.h"
-#include "ModuleSceneIntro.h"
-#include "ModulePhysics3D.h"
-#include "ModuleMesh.h"
 
-#include "glew/include/glew.h"
-#include <functional>
 
 Application::Application()
 {
 	window = new ModuleWindow(this);
 	input = new ModuleInput(this);	
 	scene = new ModuleSceneIntro(this);
-	audio = new ModuleAudio(this);
+	
 	gui = new ModuleGui(this);
 	renderer3D = new ModuleRenderer3D(this);
 	camera = new ModuleCamera3D(this);
@@ -40,7 +25,7 @@ Application::Application()
 	AddModule(window);
 	AddModule(camera);
 	
-	AddModule(audio);
+	
 	AddModule(input);
 	AddModule(gui);
 	AddModule(physics);

@@ -1,4 +1,4 @@
-#pragma once
+
 #pragma once
 #include "Globals.h"
 #include "Module.h"
@@ -14,8 +14,8 @@ class Config;
 struct PathNode;
 
 class GameObject;
-struct ComponentMaterial;
-class ComponentMesh;
+struct ModuleMaterial;
+class ModuleMesh;
 class aiScene;
 struct aiNode;
 

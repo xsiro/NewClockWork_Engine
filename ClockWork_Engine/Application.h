@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <string>
 #include "glew/include/glew.h"
 
 #include "Globals.h"
@@ -7,7 +8,6 @@
 #include "Module.h"
 #include "ModuleWindow.h"
 #include "ModuleInput.h"
-#include "ModuleAudio.h"
 #include "ModuleRenderer3D.h"
 #include "ModuleCamera3D.h"
 #include "ModuleSceneIntro.h"
@@ -16,23 +16,21 @@
 #include "ModuleImporter.h"
 #include "FileSys.h"
 
-#include <list>
+
 
 class Application
 {
 public:
 	ModuleWindow* window;
 	ModuleInput* input;
-	ModuleAudio* audio;
 	ModuleRenderer3D* renderer3D;
 	ModuleCamera3D* camera;
 	ModuleSceneIntro* scene;
 	ModulePhysics3D* physics;
 	ModuleGui* gui;
-	//ModuleMeshLoader* mesh_loader;
 	ModuleImporter* importer;
 	FileSystem* filesys;
-	bool					renderPrimitives;
+	
 private:
 
 	Timer	ms_timer;
@@ -43,6 +41,10 @@ public:
 
 	Application();
 	~Application();
+
+	bool Init();
+	update_status Update();
+	bool CleanUp();
 
 	int CPUCount();
 	int CPUCache();
@@ -55,9 +57,7 @@ public:
 	int Available();
 	int Reserved();
 	std::string Caps;
-	bool Init();
-	update_status Update();
-	bool CleanUp();
+	
 
 private:
 

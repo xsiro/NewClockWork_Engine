@@ -3,6 +3,7 @@
 #include <vector>
 #include <iostream>
 #include <string>
+#include "imgui.h"
 
 class ModuleComponent;
 enum class ComponentType;
@@ -18,7 +19,7 @@ public:
 	ModuleComponent* GetComponent(ComponentType component);
 	ModuleComponent* CreateComponent(ComponentType type);
 	bool DeleteComponent(ModuleComponent* component);
-	void AddComponent(ModuleComponent* component);
+	
 
 public:
 	GameObject* parent;
