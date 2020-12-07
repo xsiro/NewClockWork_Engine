@@ -27,7 +27,7 @@ bool ModuleSceneIntro::Start()
 	App->camera->Move(vec3(1.0f, 1.0f, 0.0f));
 	App->camera->LookAt(vec3(0, 0, 0));
 	GameObject* house = App->importer->LoadFBX("Assets/BakerHouse.FBX");
-	App->importer->LoadTexture("Assets/Baker_house.png");
+	App->importer->LoadTexture("Assets/BakerHouse.png");
 	CreateGameObject(house);
 
 	return ret;
@@ -97,11 +97,11 @@ update_status ModuleSceneIntro::Update(float dt)
 
 GameObject* ModuleSceneIntro::CreateGameObject(GameObject* father) 
 {
-	GameObject* newgo = new GameObject();
-	newgo->parent = father;
-	game_objects.push_back(newgo);
+	GameObject* newo = new GameObject();
+	newo->parent = father;
+	game_objects.push_back(newo);
 
 	selected_object = father;
 
-	return newgo;
+	return newo;
 }

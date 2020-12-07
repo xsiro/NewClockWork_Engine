@@ -43,13 +43,14 @@ ModuleGui::ModuleGui(Application* app, bool start_enabled) : Module(app, start_e
 	cullface = false;
 	lighting = false;
 	material = false;
-	cubemap = false;
+	cubemap = true;
 	polygonssmooth = false;
 
 	wireframe = false;
 	vertexlines = false;
 	facelines = false;
 	check = false;
+	texture2D = false;
 
 	viewconfig = true;
 	console = true;
@@ -63,13 +64,7 @@ ModuleGui::~ModuleGui()
 {}
 
 // Called before render is available
-bool ModuleGui::Awake()
-{
-	LOG("Loading GUI atlas");
-	bool ret = true;	
 
-	return ret;
-}
 
 // Called before the first frame
 bool ModuleGui::Init()
@@ -82,30 +77,22 @@ bool ModuleGui::Init()
 	ImGui::StyleColorsDark(); 
 
 	// Setting context
-	//gl_context = SDL_GL_CreateContext(App->window->window);
-	//SDL_GL_MakeCurrent(App->window->window, gl_context);
+	gl_context = SDL_GL_CreateContext(App->window->window);
+	SDL_GL_MakeCurrent(App->window->window, gl_context);
 	ImGui_ImplOpenGL3_Init();
 	ImGui_ImplSDL2_InitForOpenGL(App->window->window, App->renderer3D->context);
-	//TEST
 	
 	
 
-	//TEST
-	// GL 3.0 + GLSL 130
-	/*const char* glsl_version = "#version 130";
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);*/
 
-#if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
-	bool err = glewInit() != 0;
-#endif
-	if (err)
-	{
-		fprintf(stderr, "Failed to initialize OpenGL loader!\n");
-		return 1;
-	}
+//#if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
+//	bool err = glewInit() != 0;
+//#endif
+//	if (err)
+//	{
+//		fprintf(stderr, "Failed to initialize OpenGL loader!\n");
+//		return 1;
+//	}
 
 	//TEST
 
@@ -354,6 +341,15 @@ update_status ModuleGui::Update(float dt)
 			ImGui::SameLine();
 			ImGui::TextColored({ 1.0f, 1.0f, 0.0f, 1.0f }, "%s", App->importer->GetMaterialFileName());
 			ImGui::Separator();
+			
+			if (ImGui::Checkbox("Color Material", &colormaterial)) {
+				App->renderer3D->SetColormaterial(colormaterial);
+			}
+
+			
+			if (ImGui::Checkbox("2D", &texture2D)) {
+				App->renderer3D->SetTexture2D(texture2D);
+			}
 			if (ImGui::Checkbox("Cube Map", &cubemap)) 
 			{
 				App->renderer3D->SetCubemap(cubemap);
@@ -511,18 +507,17 @@ update_status ModuleGui::Update(float dt)
 // Called after all Updates
 update_status ModuleGui::PostUpdate(float dt)
 {
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	
 	return  UPDATE_CONTINUE;
 }
 
 
 
-//void ModuleGui::Draw() {
-//
-//	
-//
-//}
+void ModuleGui::Draw() {
+
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
 
 // Called before quitting
 bool ModuleGui::CleanUp()

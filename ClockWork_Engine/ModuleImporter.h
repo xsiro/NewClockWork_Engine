@@ -64,11 +64,12 @@ public:
 	
 	ModuleMesh* UploadFile(const aiScene* scene, aiNode* node, uint id, const char* path);
 	GameObject* LoadFBX(const char* path);
+	void RecursiveCall(const aiScene* scene, aiNode* node, aiNode* parentNode, GameObject* parent, const char* path);
 	void LoadTexture(const char* path);
 	const char* GetMeshFileName();
 	const char* GetMaterialFileName();
-	void RecursiveCall(const aiScene* scene, aiNode* node, aiNode* parentNode, GameObject* parent, const char* path);
-
+	
+	
 
 	const char* meshfilename;
 	const char* materialfilename;
