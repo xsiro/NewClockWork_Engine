@@ -421,7 +421,7 @@ void FileSystem::LoadFile(const char* file_path)
 	{
 		App->scene->CreateGameObject(App->importer->LoadFBX(file_path));
 	}
-	if (strcmp(extension, ".png") == 0 || strcmp(extension, ".dds") == 0) {
+	if (strcmp(extension, ".png") == 0 || strcmp(extension, ".PNG") == 0) {
 		App->importer->LoadTexture(file_path);
 	}
 }

@@ -49,7 +49,7 @@ public:
 	SDL_GLContext context;
 	mat3x3 NormalMatrix;
 	mat4x4 ModelMatrix, ViewMatrix, ProjectionMatrix;
-	Mesh* mesh;
+
 	GLuint texture_id;
 	GLbyte checkImage[64][64][4];
 };
