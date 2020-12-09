@@ -10,9 +10,10 @@ enum class ComponentType {
 	Transform,
 	Material
 };
-
 class ModuleComponent
 {
+	
+
 public:
 
 	ModuleComponent();

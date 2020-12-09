@@ -33,6 +33,15 @@ void GameObject::Update()
 		children[i]->Update();
 	}
 }
+bool GameObject::IsEnabled()
+{
+	return enabled;
+}
+
+void GameObject::ChangeName(char* new_name)
+{
+	name = new_name;
+}
 
 ModuleComponent* GameObject::GetComponent(ComponentType component) {
 

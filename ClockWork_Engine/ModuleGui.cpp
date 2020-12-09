@@ -18,6 +18,7 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 #include "imgui_internal.h"
+//#include "MathGeoLib/include/Math/float3.h"
 
 
 
@@ -281,81 +282,86 @@ update_status ModuleGui::Update(float dt)
 	{
 		ImGui::Begin("Inspector", &inspector);
 		ImGui::Text("Inspector");
-		if (ImGui::CollapsingHeader("Transformation"))
-		{
-			ImGui::Separator();
-			vec3 position = { 0,0,0 };
-			vec3 rotation = { 0,0,0 };
-			vec3 scale = { 0,0,0 };
-			if (ImGui::DragFloat3("Position", &position, 0.1f))
-			{
-
-			}
-
-			if (ImGui::DragFloat3("Rotation", &rotation, 0.1f))
-			{
-
-			}
-
-			if (ImGui::DragFloat3("Scale", &scale, 0.1f))
-			{
-
-			}
-		}
-		if (ImGui::CollapsingHeader("Mesh"))
-		{
-			ImGui::Separator();
-			ImGui::Text("File:");
+		if (selected != nullptr) {
+			bool gameobjectCheck = selected->IsEnabled();
+			ImGui::Checkbox("Active", &gameobjectCheck);
+			(gameobjectCheck) ? selected->Enable() : selected->Disable();
 			ImGui::SameLine();
-			ImGui::TextColored({ 1.0f, 1.0f, 0.0f, 1.0f }, "%s", App->importer->GetMeshFileName());
-			ImGui::Separator();
-			ImGui::Text("General");
-			ImGui::Text("");
-			if (ImGui::Checkbox("Wireframe", &wireframe));
+			ImGui::InputText("Name", nam, ARRAYSIZE(nam));
+			selected->ChangeName(nam);
 
-			if (ImGui::Checkbox("See Vertex Lines (Blue)", &vertexlines));
-
-			if (ImGui::Checkbox("See Face Lines (Green)", &facelines));
-
-			if (ImGui::Checkbox("Depth Test", &depthtest)) {
-				App->renderer3D->SetDepthtest(depthtest);
-			}
-			if (ImGui::Checkbox("Cull Face", &cullface)) {
-				App->renderer3D->SetCullface(cullface);
-			}
-			if (ImGui::Checkbox("Lightning", &lighting)) {
-				App->renderer3D->SetLighting(lighting);
-			}
-			ImGui::Text("");
-			ImGui::Text("Polygons smoothing");
-			ImGui::Text("");
-			if (ImGui::Checkbox("Polygons smooth", &polygonssmooth))
+			if (ImGui::CollapsingHeader("Transformation"))
 			{
-				App->renderer3D->SetPolygonssmooth(polygonssmooth);
+				float3 tempValues = trans->GetPosition();
+				float pos[3] = { tempValues.x, tempValues.y, tempValues.z };
+				tempValues = trans->GetRotationEuler();
+				float rot[3] = { tempValues.x, tempValues.y, tempValues.z };
+				tempValues = trans->GetScale();
+				float scl[3] = { tempValues.x, tempValues.y, tempValues.z };
+				ImGui::DragFloat3("Position", pos, 0.05f);
+				ImGui::DragFloat3("Rotation", rot, 0.05f);
+				ImGui::DragFloat3("Scale", scl, 0.05f);
+				float3 pos_ = { pos[0], pos[1], pos[2] };
+				float3 rot_ = { rot[0], rot[1], rot[2] };
+				float3 scl_ = { scl[0], scl[1], scl[2] };
+				trans->SetTransform(pos_, rot_, scl_);
 			}
 		}
-		if (ImGui::CollapsingHeader("Material"))
-		{
-			ImGui::Separator();
-			ImGui::Text("File:");
-			ImGui::SameLine();
-			ImGui::TextColored({ 1.0f, 1.0f, 0.0f, 1.0f }, "%s", App->importer->GetMaterialFileName());
-			ImGui::Separator();
-			
-			if (ImGui::Checkbox("Color Material", &colormaterial)) {
-				App->renderer3D->SetColormaterial(colormaterial);
-			}
-
-			
-			if (ImGui::Checkbox("2D", &texture2D)) {
-				App->renderer3D->SetTexture2D(texture2D);
-			}
-			if (ImGui::Checkbox("Cube Map", &cubemap)) 
+			if (ImGui::CollapsingHeader("Mesh"))
 			{
-				App->renderer3D->SetCubemap(cubemap);
+				ImGui::Separator();
+				ImGui::Text("File:");
+				ImGui::SameLine();
+				ImGui::TextColored({ 1.0f, 1.0f, 0.0f, 1.0f }, "%s", App->importer->GetMeshFileName());
+				ImGui::Separator();
+				ImGui::Text("General");
+				ImGui::Text("");
+				if (ImGui::Checkbox("Wireframe", &wireframe));
+
+				if (ImGui::Checkbox("See Vertex Lines (Blue)", &vertexlines));
+
+				if (ImGui::Checkbox("See Face Lines (Green)", &facelines));
+
+				if (ImGui::Checkbox("Depth Test", &depthtest)) {
+					App->renderer3D->SetDepthtest(depthtest);
+				}
+				if (ImGui::Checkbox("Cull Face", &cullface)) {
+					App->renderer3D->SetCullface(cullface);
+				}
+				if (ImGui::Checkbox("Lightning", &lighting)) {
+					App->renderer3D->SetLighting(lighting);
+				}
+				ImGui::Text("");
+				ImGui::Text("Polygons smoothing");
+				ImGui::Text("");
+				if (ImGui::Checkbox("Polygons smooth", &polygonssmooth))
+				{
+					App->renderer3D->SetPolygonssmooth(polygonssmooth);
+				}
 			}
-			if (ImGui::Checkbox("Checker Mode", &check));
-		}
+			if (ImGui::CollapsingHeader("Material"))
+			{
+				ImGui::Separator();
+				ImGui::Text("File:");
+				ImGui::SameLine();
+				ImGui::TextColored({ 1.0f, 1.0f, 0.0f, 1.0f }, "%s", App->importer->GetMaterialFileName());
+				ImGui::Separator();
+
+				if (ImGui::Checkbox("Color Material", &colormaterial)) {
+					App->renderer3D->SetColormaterial(colormaterial);
+				}
+
+
+				if (ImGui::Checkbox("2D", &texture2D)) {
+					App->renderer3D->SetTexture2D(texture2D);
+				}
+				if (ImGui::Checkbox("Cube Map", &cubemap))
+				{
+					App->renderer3D->SetCubemap(cubemap);
+				}
+				if (ImGui::Checkbox("Checker Mode", &check));
+			}
+		
 		ImGui::End();
 	}
 	if (viewconfig)

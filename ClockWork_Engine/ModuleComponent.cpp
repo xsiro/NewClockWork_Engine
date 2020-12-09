@@ -3,9 +3,6 @@
 
 ModuleComponent::ModuleComponent()
 {
-	active = true;
-	owner = nullptr;
-	type = type;
 }
 
 ModuleComponent::~ModuleComponent()

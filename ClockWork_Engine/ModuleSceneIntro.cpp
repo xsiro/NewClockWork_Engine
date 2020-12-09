@@ -2,14 +2,16 @@
 #include "Application.h"
 #include "Module.h"
 #include "ModuleSceneIntro.h"
-#include "Primitive.h"
-#include "imgui.h"
-#include "ModuleGui.h"
 #include "ModuleMesh.h"
+#include "ModuleImporter.h"
+#include "ModuleMaterial.h"
 #include "FileSys.h"
 #include "GameObject.h"
+#include "Primitive.h"
+#include "imgui.h"
+#include "ModuleComponent.h"
 
-class ModuleMesh;
+
 
 ModuleSceneIntro::ModuleSceneIntro(Application* app, bool start_enabled) : Module(app, start_enabled)
 {
@@ -23,6 +25,13 @@ bool ModuleSceneIntro::Start()
 {
 	LOG("Loading Intro assets");
 	bool ret = true;
+
+	root = new GameObject();
+	root->CreateComponent(ComponentType::Transform);
+	root->id = 0;
+
+	currentID = 0;
+	game_objects.push_back(root);
 
 	App->camera->Move(vec3(1.0f, 1.0f, 0.0f));
 	App->camera->LookAt(vec3(0, 0, 0));
@@ -58,39 +67,39 @@ update_status ModuleSceneIntro::Update(float dt)
 
 
 
-	Cube cube(1.0f, 1.0f, 1.0f);
-	if (App->gui->wireframe == true) {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
-	else if (App->gui->wireframe == false) {
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	}
-	if (App->gui->cube) {
-		ModuleMesh* Cube = new ModuleMesh();
-		ModuleMesh CreateCubeDirect();
-	}
+	//Cube cube(1.0f, 1.0f, 1.0f);
+	//if (App->gui->wireframe == true) {
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//}
+	//else if (App->gui->wireframe == false) {
+	//	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//}
+	//if (App->gui->cube) {
+	//	ModuleMesh* Cube = new ModuleMesh();
+	//	ModuleMesh CreateCubeDirect();
+	//}
 
-	if (App->gui->pyramid)
-	{
-		ModuleMesh* Pyramid = new ModuleMesh();
-		ModuleMesh CreatePyramid();
-	}
+	//if (App->gui->pyramid)
+	//{
+	//	ModuleMesh* Pyramid = new ModuleMesh();
+	//	ModuleMesh CreatePyramid();
+	//}
 
-	if (App->gui->cylinder)
-	{
-		ModuleMesh* Cylinder = new ModuleMesh();
-		ModuleMesh CreateCylinder();
-	}
+	//if (App->gui->cylinder)
+	//{
+	//	ModuleMesh* Cylinder = new ModuleMesh();
+	//	ModuleMesh CreateCylinder();
+	//}
 
-	if (App->gui->sphere)
-	{
-		ModuleMesh* Sphere = new ModuleMesh();
-		ModuleMesh CreateSphere();
-	}
-	for (size_t i = 0; i < game_objects.size(); i++)
-	{
-		game_objects[i]->Update();
-	}
+	//if (App->gui->sphere)
+	//{
+	//	ModuleMesh* Sphere = new ModuleMesh();
+	//	ModuleMesh CreateSphere();
+	//}
+	//for (size_t i = 0; i < game_objects.size(); i++)
+	//{
+	//	game_objects[i]->Update();
+	//}
 
 	return UPDATE_CONTINUE;
 }

@@ -7,6 +7,7 @@
 #include <vector>
 #include "imgui.h"
 #include "glmath.h"
+#include "ModuleTransform.h"
 
 #include "SDL/include/SDL_rect.h"
 #include "SDL/include/SDL_video.h"
@@ -120,6 +121,9 @@ public:
 	bool* dockingwindow;
 	std::vector<std::string> log_record;
 	std::vector<char*> logs;
+	GameObject* selected;
+	char nam[128];
+	ModuleTransform* trans;
 
 };
 
