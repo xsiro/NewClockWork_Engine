@@ -1,9 +1,12 @@
 #pragma once
-#pragma once
 #include "Globals.h"
-#include <vector>
+#include "glmath.h"
 #include "ModuleComponent.h"
+#include "MathGeoLib/include/Math/float3.h"
+#include "MathGeoLib/include/Math/float4x4.h"
+#include "MathGeoLib/include/Math/Quat.h"
 #include "MathGeoLib/include/MathGeoLib.h"
+
 
 class GameObject;
 

@@ -67,7 +67,7 @@ update_status ModuleSceneIntro::Update(float dt)
 	for (; currentGO != game_objects.end(); currentGO++) {
 		(*currentGO)->Update();
 	}
-	Plane p(0, 1, 0, 0);
+	lane p(0, 1, 0, 0);
 	p.axis = true;
 	p.Render();
 
