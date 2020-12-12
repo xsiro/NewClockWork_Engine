@@ -1,64 +1,111 @@
 #pragma once
 #include "Globals.h"
-#include "glmath.h"
-#include <vector>
 #include "ModuleComponent.h"
+#include <vector>;
+#include "ModuleMaterial.h"
 
+#include "MathGeoLib/include/MathGeoLib.h"
 
-class GameObject;
-class ModuleMaterial;
-typedef unsigned int GLuint;
+class ResourceMesh;
+
+typedef float GLfloat;
+typedef unsigned short GLushort;
 typedef unsigned char GLubyte;
 
-class ModuleMesh : public ModuleComponent
-{
+class GnMesh : public ModuleComponent {
 public:
+	GnMesh();
+	virtual ~GnMesh();
+	void SetResourceUID(uint UID) override;
+	Resource* GetResource(ResourceType type) override;
 
-	ModuleMesh();
-	~ModuleMesh();
-	virtual void Update();
-	void CreateCubeDirect();
-	void CreateCubeVertex();
-	void CreateCubeIndex();
-	void CreatePyramid();
-	void CreateSphere(float radius, unsigned int rings, unsigned int sectors);
-	void CreateCylinder(float radius, float height, int sides);
+	void GenerateAABB();
+	AABB GetAABB();
 
-	void RenderFBX();
-	void LoadFBXBuffer();
-	void DrawVertexNormalLines();
-	void DrawFaceNormalLines();
-	
-	void LoadingCheckerTextures();
+	virtual void Update() override;
+	virtual void Render();
+	virtual void OnEditor() override;
+
+	void DrawVertexNormals();
+	void DrawFaceNormals();
 
 public:
+	const char* name;
+	char* path;
 
-	GLubyte checkerImage[64][64][4];
-	bool rendered;
+private:
+	AABB _AABB;
 
-	uint id_index = 0; // index in VRAM
-	uint num_index = 0;
-	uint* index = nullptr;
+	bool draw_vertex_normals;
+	bool draw_face_normals;
 
-	uint	id_normals = 0;
-	uint	num_normals = 0;
-	float* normals = NULL;
+	ResourceMesh* _resource;
 
-	uint	id_colors = 0;
-	uint	num_colors = 0;
-	float* colors = NULL;
-
-	uint	id_texcoords = 0;
-	uint	num_texcoords = 0;
-	float* texcoords = nullptr;
-	uint image_id;
-
-	uint id_vertex = 0; // unique vertex in VRAM
-	uint num_vertex = 0;
-	GLuint texture = 0;
-	GLuint texture_id;
-	float* vertex = nullptr;
-	bool reload = false;
 };
 
+class GnCube : public GnMesh {
+public:
+	GnCube();
+	~GnCube();
+};
 
+class GnPlane : public GnMesh {
+public:
+	GnPlane();
+	~GnPlane();
+};
+
+class GnPyramid : public GnMesh {
+public:
+	GnPyramid();
+	~GnPyramid();
+};
+
+class GnSphere : public GnMesh {
+public:
+	GnSphere();
+	~GnSphere();
+
+	void Render() override;
+
+private:
+	std::vector<GLfloat> vertices;
+	std::vector<GLushort> indices;
+};
+
+class GnCylinder : public GnMesh {
+public:
+	GnCylinder();
+	GnCylinder(float radius, float height, int sides);
+	~GnCylinder();
+
+	void CalculateGeometry();
+private:
+	float radius = 0;
+	float height = 0;
+	unsigned int sides = 0;
+};
+
+class GnGrid {
+public:
+	GnGrid(int size);
+	~GnGrid();
+
+	void Render();
+
+private:
+	int size;
+};
+
+class GnCone : public GnMesh {
+public:
+	GnCone();
+	GnCone(float radius, float height, int sides);
+	~GnCone();
+
+	void CalculateGeometry(int sides);
+
+private:
+	float radius;
+	float height;
+};

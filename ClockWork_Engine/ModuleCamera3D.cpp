@@ -1,6 +1,7 @@
 #include "Globals.h"
 #include "Application.h"
 #include "ModuleCamera3D.h"
+#include "Cam.h"
 
 ModuleCamera3D::ModuleCamera3D(Application* app, bool start_enabled) : Module(app, start_enabled)
 {
@@ -161,4 +162,24 @@ void ModuleCamera3D::CalculateViewMatrix()
 {
 	ViewMatrix = mat4x4(X.x, Y.x, Z.x, 0.0f, X.y, Y.y, Z.y, 0.0f, X.z, Y.z, Z.z, 0.0f, -dot(X, Position), -dot(Y, Position), -dot(Z, Position), 1.0f);
 	ViewMatrixInverse = inverse(ViewMatrix);
+}
+
+FixedFOV ModuleCamera3D::GetFixedFOV()
+{
+	return _camera->fixedFOV;
+}
+
+void ModuleCamera3D::SetFixedFOV(FixedFOV fixedFOV)
+{
+	_camera->SetFixedFOV(fixedFOV);
+}
+
+void ModuleCamera3D::SetBackgroundColor(float r, float g, float b, float w)
+{
+	background = { r,g,b,w };
+}
+
+void ModuleCamera3D::OnResize(int width, int height)
+{
+	_camera->AdjustFieldOfView(width, height);
 }

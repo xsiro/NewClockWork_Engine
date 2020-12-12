@@ -1,27 +1,37 @@
 #pragma once
-#include "Globals.h"
-#include "glmath.h"
-#include <vector>
 #include "ModuleComponent.h"
+#include "Globals.h"
 
-class GameObject;
-typedef unsigned int GLuint;
-typedef unsigned char GLubyte;
+#include <string>
 
-class ModuleMaterial : public ModuleComponent
-{
+class GnMesh;
+class ResourceMat;
+class ResourceTex;
 
+
+class ModuleMaterial : public ModuleComponent {
 public:
-
 	ModuleMaterial();
+	ModuleMaterial(GameObject* gameObject);
 	~ModuleMaterial();
-	virtual void Update();
 
-public:
+	void Update() override;
+	void SetResourceUID(uint UID) override;
 
-	GLuint Gl_Tex;
+	void BindTexture();
 
 
-public:
+	void OnEditor() override;
 
+	void SetTexture(ResourceTex* texture);
+	void AssignCheckersImage();
+	ResourceTex* GetDiffuseTexture();
+
+private:
+	bool checkers_image;
+	bool colored;
+
+	ResourceMat* _resource;
+	ResourceTex* _diffuseTexture;
+	uint checkersID;
 };

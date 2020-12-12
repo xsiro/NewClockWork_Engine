@@ -1,94 +1,86 @@
 #include "FileSys.h"
 #include "Application.h"
-#include "ModuleMesh.h"
-#include "ModuleImporter.h"
-#include "GameObject.h"
 
 #include "SDL/include/SDL.h"
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <Shlwapi.h>
-#include <string>
-
-#pragma comment(lib,"shlwapi.lib")
 
 #include "PhysFS/include/physfs.h"
-#include "Assimp/include/cimport.h"
-#include "Assimp/include/scene.h"
-#include "Assimp/include/postprocess.h"
-
-#include "Devil/include/IL/il.h"
-#include "Devil/include/IL/ilu.h"
-#include "Devil/include/IL/ilut.h"
 
 #pragma comment (lib, "PhysFS/libx86/physfs.lib")
-#pragma comment (lib, "Assimp/libx86/assimp.lib")
+#pragma comment (lib,"shlwapi.lib")
 
-#pragma comment (lib, "Devil/libx86/DevIL.lib")	
-#pragma comment (lib, "Devil/libx86/ILU.lib")	
-#pragma comment (lib, "Devil/libx86/ILUT.lib")	
 
-FileSystem::FileSystem(Application* app, bool start_enabled) : Module(app, start_enabled)
+
+void FileSys::Init()
 {
-	// needs to be created before Init so other modules can use it
 	char* base_path = SDL_GetBasePath();
-	PHYSFS_init(nullptr);
-	SDL_free(base_path);
 
-	//Setting the working directory as the writing directory
-	if (PHYSFS_setWriteDir(".") == 0)
-		LOG("File System error while creating write dir: %s\n", PHYSFS_getLastError());
+	if (PHYSFS_init(nullptr) != 0)
+		LOG("PhysFS initted correctly");
+
+	SDL_free(base_path);
 
 	AddPath("."); //Adding ProjectFolder (working directory)
 	AddPath("Assets");
+
+	if (PHYSFS_setWriteDir(".") == 0)
+		LOG_ERROR("File System error while creating write dir: %s\n", PHYSFS_getLastError());
+
 	CreateLibraryDirectories();
+
+	std::string path = PHYSFS_getWriteDir();
+
+	normalize_scales = true;
 }
 
-// Destructor
-FileSystem::~FileSystem()
+void FileSys::CleanUp()
 {
 	PHYSFS_deinit();
 }
 
-// Called before render is available
-bool FileSystem::Init(Config& config)
+void FileSys::GetPhysFSVersion(std::string& version_str)
 {
-	LOG("Loading File System");
-	bool ret = true;
-
-	// Ask SDL for a write dir
-	//char* write_path = SDL_GetPrefPath(Engine->GetOrganizationName(), Engine->GetTitleName());
-
-	// Trun this on while in game mode
-	//if(PHYSFS_setWriteDir(write_path) == 0)
-	//	LOG("File System error while creating write dir: %s\n", PHYSFS_getLastError());
-
-	//SDL_free(write_path);
-
-	return ret;
+	PHYSFS_Version version;
+	PHYSFS_getLinkedVersion(&version);
+	version_str = std::to_string(version.major) + "." + std::to_string(version.minor) + "." + std::to_string(version.patch);
 }
 
-// Called before quitting
-bool FileSystem::CleanUp()
+void FileSys::CreateLibraryDirectories()
 {
-	//LOG("Freeing File System subsystem");
+	//CreateDir(LIBRARY_PATH);
+	//CreateDir(FOLDERS_PATH);
+	//CreateDir(MESHES_PATH);
+	//CreateDir(TEXTURES_PATH);
+	//CreateDir(MATERIALS_PATH);
+	CreateDir("Assets/Config/");
+	CreateDir("Assets/Textures/");
+	CreateDir("Assets/Models/");
+	CreateDir("Assets/Scenes/");
 
-	return true;
+	CreateDir("Library/Config/");
+	CreateDir("Library/Models/");
+	CreateDir("Library/Meshes/");
+	CreateDir("Library/Materials/");
+	CreateDir("Library/Textures/");
+	CreateDir("Library/Scenes/");
+	//CreateDir("Materials/");
+	//CreateDir(ANIMATIONS_PATH);
+	//CreateDir(PARTICLES_PATH);
+	//CreateDir(SHADERS_PATH);
+	//CreateDir(SCENES_PATH);
 }
 
-void FileSystem::CreateLibraryDirectories()
-{
-
-}
-
-// Add a new zip file or folder
-bool FileSystem::AddPath(const char* path_or_zip)
+// Add a new zip file_path or folder
+bool FileSys::AddPath(const char* path_or_zip)
 {
 	bool ret = false;
 
 	if (PHYSFS_mount(path_or_zip, nullptr, 1) == 0)
 	{
-		LOG("File System error while adding a path or zip: %s\n", PHYSFS_getLastError());
+		LOG_ERROR("File System error while adding a path or zip: %s\n", PHYSFS_getLastError());
 	}
 	else
 		ret = true;
@@ -96,13 +88,13 @@ bool FileSystem::AddPath(const char* path_or_zip)
 	return ret;
 }
 
-// Check if a file exists
-bool FileSystem::Exists(const char* file) const
+// Check if a file_path exists
+bool FileSys::Exists(const char* file)
 {
 	return PHYSFS_exists(file) != 0;
 }
 
-bool FileSystem::CreateDir(const char* dir)
+bool FileSys::CreateDir(const char* dir)
 {
 	if (IsDirectory(dir) == false)
 	{
@@ -112,19 +104,19 @@ bool FileSystem::CreateDir(const char* dir)
 	return false;
 }
 
-// Check if a file is a directory
-bool FileSystem::IsDirectory(const char* file) const
+// Check if a file_path is a directory
+bool FileSys::IsDirectory(const char* file)
 {
 	return PHYSFS_isDirectory(file) != 0;
 }
 
-const char* FileSystem::GetWriteDir() const
+const char* FileSys::GetWriteDir()
 {
 	//TODO: erase first annoying dot (".")
 	return PHYSFS_getWriteDir();
 }
 
-void FileSystem::DiscoverFiles(const char* directory, std::vector<std::string>& file_list, std::vector<std::string>& dir_list) const
+void FileSys::DiscoverFiles(const char* directory, std::vector<std::string>& file_list, std::vector<std::string>& dir_list)
 {
 	char** rc = PHYSFS_enumerateFiles(directory);
 	char** i;
@@ -141,7 +133,31 @@ void FileSystem::DiscoverFiles(const char* directory, std::vector<std::string>& 
 	PHYSFS_freeList(rc);
 }
 
-void FileSystem::GetAllFilesWithExtension(const char* directory, const char* extension, std::vector<std::string>& file_list) const
+void FileSys::DiscoverFilesRecursive(const char* directory, std::vector<std::string>& file_list, std::vector<std::string>& dir_list)
+{
+	std::vector<std::string> files;
+	std::vector<std::string> directories;
+
+	DiscoverFiles(directory, files, directories);
+
+	for (size_t i = 0; i < files.size(); i++)
+	{
+		std::string file = directory;
+		file.append("/" + files[i]);
+		file_list.push_back(file);
+	}
+
+	for (size_t i = 0; i < directories.size(); i++)
+	{
+		std::string dir = directory;
+		dir.append("/" + directories[i]);
+		dir_list.push_back(dir);
+		DiscoverFilesRecursive(dir.c_str(), file_list, dir_list);
+	}
+
+}
+
+void FileSys::GetAllFilesWithExtension(const char* directory, const char* extension, std::vector<std::string>& file_list)
 {
 	std::vector<std::string> files;
 	std::vector<std::string> dirs;
@@ -157,7 +173,7 @@ void FileSystem::GetAllFilesWithExtension(const char* directory, const char* ext
 	}
 }
 
-void FileSystem::GetRealDir(const char* path, std::string& output) const
+void FileSys::GetRealDir(const char* path, std::string& output)
 {
 	output = PHYSFS_getBaseDir();
 
@@ -169,29 +185,39 @@ void FileSystem::GetRealDir(const char* path, std::string& output) const
 	output.append(PHYSFS_getRealDir(path)).append("/").append(path);
 }
 
-std::string FileSystem::GetPathRelativeToAssets(const char* originalPath) const
+std::string FileSys::GetPathRelativeToAssets(const char* originalPath)
 {
-	std::string ret;
-	GetRealDir(originalPath, ret);
+	std::string file_path = originalPath;
 
-	return ret;
+	std::size_t pos = file_path.find("Assets");
+
+	if (pos > file_path.size())
+	{
+		file_path.clear();
+	}
+	else
+	{
+		file_path = file_path.substr(pos);
+	}
+
+	return file_path;
 }
 
-bool FileSystem::HasExtension(const char* path) const
+bool FileSys::HasExtension(const char* path)
 {
 	std::string ext = "";
 	SplitFilePath(path, nullptr, nullptr, &ext);
 	return ext != "";
 }
 
-bool FileSystem::HasExtension(const char* path, std::string extension) const
+bool FileSys::HasExtension(const char* path, std::string extension)
 {
 	std::string ext = "";
 	SplitFilePath(path, nullptr, nullptr, &ext);
 	return ext == extension;
 }
 
-bool FileSystem::HasExtension(const char* path, std::vector<std::string> extensions) const
+bool FileSys::HasExtension(const char* path, std::vector<std::string> extensions)
 {
 	std::string ext = "";
 	SplitFilePath(path, nullptr, nullptr, &ext);
@@ -205,7 +231,23 @@ bool FileSystem::HasExtension(const char* path, std::vector<std::string> extensi
 	return false;
 }
 
-std::string FileSystem::NormalizePath(const char* full_path) const
+std::string FileSys::ProcessPath(const char* path)
+{
+	std::string final_path = path;
+
+	final_path = NormalizePath(final_path.c_str());
+	std::string tmp_path = GetPathRelativeToAssets(final_path.c_str());
+
+	//The file_path is inside a directory
+	if (tmp_path.size() > 0)
+	{
+		return tmp_path.c_str();
+	}
+
+	return final_path.c_str();
+}
+
+std::string FileSys::NormalizePath(const char* full_path)
 {
 	std::string newPath(full_path);
 	for (int i = 0; i < newPath.size(); ++i)
@@ -216,7 +258,7 @@ std::string FileSystem::NormalizePath(const char* full_path) const
 	return newPath;
 }
 
-void FileSystem::SplitFilePath(const char* full_path, std::string* path, std::string* file, std::string* extension) const
+void FileSys::SplitFilePath(const char* full_path, std::string* path, std::string* file, std::string* extension)
 {
 	if (full_path != nullptr)
 	{
@@ -250,15 +292,15 @@ void FileSystem::SplitFilePath(const char* full_path, std::string* path, std::st
 	}
 }
 
-unsigned int FileSystem::Load(const char* path, const char* file, char** buffer) const
+unsigned int FileSys::Load(const char* path, const char* file, char** buffer)
 {
 	std::string full_path(path);
 	full_path += file;
 	return Load(full_path.c_str(), buffer);
 }
 
-// Read a whole file and put it in a new buffer
-uint FileSystem::Load(const char* file, char** buffer) const
+// Read a whole file_path and put it in a new buffer
+uint FileSys::Load(const char* file, char** buffer)
 {
 	uint ret = 0;
 
@@ -274,27 +316,27 @@ uint FileSystem::Load(const char* file, char** buffer) const
 			uint readed = (uint)PHYSFS_read(fs_file, *buffer, 1, size);
 			if (readed != size)
 			{
-				LOG("File System error while reading from file %s: %s\n", file, PHYSFS_getLastError());
-				//RELEASE_ARRAY(buffer);
+				LOG_ERROR("File System error while reading from file %s: %s\n", file, PHYSFS_getLastError());
+				RELEASE_ARRAY(buffer);
 			}
 			else
 			{
 				ret = readed;
-				//Adding end of file at the end of the buffer. Loading a shader file does not add this for some reason
+				//Adding end of file_path at the end of the buffer. Loading a shader file_path does not add this for some reason
 				(*buffer)[size] = '\0';
 			}
 		}
 
 		if (PHYSFS_close(fs_file) == 0)
-			LOG("File System error while closing file %s: %s\n", file, PHYSFS_getLastError());
+			LOG_ERROR("File System error while closing file %s: %s\n", file, PHYSFS_getLastError());
 	}
 	else
-		LOG("File System error while opening file %s: %s\n", file, PHYSFS_getLastError());
+		LOG_ERROR("File System error while opening file %s: %s\n", file, PHYSFS_getLastError());
 
 	return ret;
 }
 
-bool FileSystem::DuplicateFile(const char* file, const char* dstFolder, std::string& relativePath)
+bool FileSys::DuplicateFile(const char* file, const char* dstFolder, std::string& relativePath)
 {
 	std::string fileStr, extensionStr;
 	SplitFilePath(file, nullptr, &fileStr, &extensionStr);
@@ -306,7 +348,7 @@ bool FileSystem::DuplicateFile(const char* file, const char* dstFolder, std::str
 
 }
 
-bool FileSystem::DuplicateFile(const char* srcFile, const char* dstFile)
+bool FileSys::DuplicateFile(const char* srcFile, const char* dstFile)
 {
 	//TODO: Compare performance to calling Load(srcFile) and then Save(dstFile)
 	std::ifstream src;
@@ -332,15 +374,26 @@ bool FileSystem::DuplicateFile(const char* srcFile, const char* dstFile)
 	}
 }
 
+void FileSys::Rename(const char* old_name, const char* new_name)
+{
+	char* fileBuffer;
+	uint size = FileSys::Load(old_name, &fileBuffer);
+
+	Save(new_name, fileBuffer, size);
+	Delete(old_name);
+
+	RELEASE_ARRAY(fileBuffer);
+}
+
 int close_sdl_rwops(SDL_RWops* rw)
 {
-	//RELEASEARRAY(rw->hidden.mem.base);
+	RELEASE_ARRAY(rw->hidden.mem.base);
 	SDL_FreeRW(rw);
 	return 0;
 }
 
 // Save a whole buffer to disk
-uint FileSystem::Save(const char* file, const void* buffer, unsigned int size, bool append) const
+uint FileSys::Save(const char* file, const void* buffer, unsigned int size, bool append)
 {
 	unsigned int ret = 0;
 
@@ -352,33 +405,51 @@ uint FileSystem::Save(const char* file, const void* buffer, unsigned int size, b
 		uint written = (uint)PHYSFS_write(fs_file, (const void*)buffer, 1, size);
 		if (written != size)
 		{
-			LOG("[error] File System error while writing to file %s: %s", file, PHYSFS_getLastError());
+			LOG_ERROR("[error] File System error while writing to file %s: %s", file, PHYSFS_getLastError());
 		}
 		else
 		{
-			if (append == true) {
+			if (append == true)
+			{
 				LOG("Added %u data to [%s%s]", size, GetWriteDir(), file);
 			}
-			else if (overwrite == true) {
+			else if (overwrite == true)
+			{
 				LOG("File [%s%s] overwritten with %u bytes", GetWriteDir(), file, size);
 			}
 			else
+			{
 				LOG("New file created [%s%s] of %u bytes", GetWriteDir(), file, size);
+			}
 
 			ret = written;
 		}
 
 		if (PHYSFS_close(fs_file) == 0)
-			LOG("[error] File System error while closing file %s: %s", file, PHYSFS_getLastError());
+			LOG_ERROR("[error] File System error while closing file %s: %s", file, PHYSFS_getLastError());
 	}
 	else
-		LOG("[error] File System error while opening file %s: %s", file, PHYSFS_getLastError());
+		LOG_ERROR("[error] File System error while opening file %s: %s", file, PHYSFS_getLastError());
 
 	return ret;
 }
 
+bool FileSys::Delete(const char* file)
+{
+	if (PHYSFS_delete(file) != 0)
+		return true;
+	else {
+		LOG_ERROR("File System error while deleting file %s: %s", file, PHYSFS_getLastError());
+		return false;
+	}
+}
 
-std::string FileSystem::GetUniqueName(const char* path, const char* name) const
+uint64 FileSys::GetLastModTime(const char* filename)
+{
+	return PHYSFS_getLastModTime(filename);
+}
+
+std::string FileSys::GetUniqueName(const char* path, const char* name)
 {
 	//TODO: modify to distinguix files and dirs?
 	std::vector<std::string> files, dirs;
@@ -413,17 +484,45 @@ std::string FileSystem::GetUniqueName(const char* path, const char* name) const
 	return finalName;
 }
 
-void FileSystem::LoadFile(const char* file_path)
+std::string FileSys::GetFileFormat(const char* path)
 {
-	char* extension = PathFindExtensionA(file_path);
-
-	if (strcmp(extension, ".fbx") == 0 || strcmp(extension, ".FBX") == 0)
-	{
-		App->scene->CreateGameObject(App->importer->LoadFBX(file_path));
-	}
-	if (strcmp(extension, ".png") == 0 || strcmp(extension, ".PNG") == 0) {
-		App->importer->LoadTexture(file_path);
-	}
+	std::string format = PathFindExtensionA(path);
+	std::transform(format.begin(), format.end(), format.begin(), [](unsigned char c) { return std::tolower(c); });
+	return format;
 }
+
+std::string FileSys::GetFile(const char* path)
+{
+	std::string file;
+	std::string file_path;
+	std::string extension;
+	SplitFilePath(path, &file_path, &file, &extension);
+	return file + "." + extension;
+}
+
+std::string FileSys::GetFileName(const char* path)
+{
+	std::string file;
+	std::string file_path;
+	SplitFilePath(path, &file_path, &file);
+	return file;
+}
+
+std::string FileSys::GetFolder(const char* path)
+{
+	std::string folder;
+	SplitFilePath(path, &folder);
+	return folder;
+}
+
+std::string FileSys::ToLower(const char* path)
+{
+	std::string string = path;
+	std::transform(string.begin(), string.end(), string.begin(), [](unsigned char c) { return std::tolower(c); });
+	return string;
+}
+
+
+
 
 

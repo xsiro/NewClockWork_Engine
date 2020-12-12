@@ -1,579 +1,361 @@
-#include "Globals.h"
-#include "Application.h"
-#include "glew/include/glew.h"
 #include "ModuleMesh.h"
+#include "Application.h"
+#include "ModuleRenderer3D.h"
+#include "FileSys.h"
+#include "ModuleMaterial.h"
+#include "GameObject.h"
+#include "ModuleTransform.h"
+
+#include "ResourceMesh.h"
+
+#include "glew/include/glew.h"
 #include "imgui.h"
-#include "ModuleGui.h"
-#include "ModuleImporter.h"
 
+// GnMesh =========================================================================================================================
 
-#include "SDL/include/SDL_opengl.h"
-#include <gl/GL.h>
-#include <gl/GLU.h>
-
-#pragma comment (lib, "glu32.lib") 
-#pragma comment (lib, "opengl32.lib")
-#pragma comment (lib, "glew/libx86/glew32.lib")
-
-ModuleMesh::ModuleMesh() : ModuleComponent()
+GnMesh::GnMesh() : ModuleComponent(), draw_face_normals(false), draw_vertex_normals(false), name("No name"), _resource(nullptr)
 {
-	type = ComponentType::Mesh;
-	rendered = false;
+	type = ComponentType::MESH;
 }
 
-ModuleMesh::~ModuleMesh()
+GnMesh::~GnMesh()
 {
-}
-
-static const float g_vertex_buffer_data[] = {
-	-1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	-1.0f,-1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	-1.0f,-1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f,-1.0f,
-	1.0f,-1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f,-1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f,-1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f, 1.0f, 1.0f,
-	-1.0f, 1.0f, 1.0f,
-	1.0f,-1.0f, 1.0f };
-
-GLfloat vertices[] = { 1, 1, 1,  -1, 1, 1,  -1,-1, 1,   1,-1, 1,   // v0,v1,v2,v3 (front face)
-						1, 1, 1,   1,-1, 1,   1,-1,-1,   1, 1,-1,   // v0,v3,v4,v5 (right face)
-						1, 1, 1,   1, 1,-1,  -1, 1,-1,  -1, 1, 1,   // v0,v5,v6,v1 (top face)
-					   -1, 1, 1,  -1, 1,-1,  -1,-1,-1,  -1,-1, 1,   // v1,v6,v7,v2 (left face)
-					   -1,-1,-1,   1,-1,-1,   1,-1, 1,  -1,-1, 1,   // v7,v4,v3,v2 (bottom face)
-						1,-1,-1,  -1,-1,-1,  -1, 1,-1,   1, 1,-1 }; // v4,v7,v6,v5 (back face)
-
-uint indices[] = { 0, 1, 2,   2, 3, 0,      // front face
-				   4, 5, 6,   6, 7, 4,      // right face
-				   8, 9,10,  10,11, 8,      // top face
-				   12,13,14,  14,15,12,      // left face
-				   16,17,18,  18,19,16,      // bottom face
-				   20,21,22,  22,23,20 };    // back face
-
-//----------------------------------- pyramid ----------------------------------------
-float pyramid_vertices[] = {
-	//Bottom face
-	0.0f ,0.0f, 0.0f,
-	1.0f ,0.0f, 0.0f,
-	1.0f ,0.0f, 1.0f,
-	0.0f ,0.0f, 1.0f,
-
-	//Top face
-	0.5f, 1.0f, 0.5f
-};
-
-uint pyramid_indices[]{
-	//Bottom face
-	0, 1, 2,	2, 3, 0,
-
-	3, 2, 4, // Front face
-	0, 3, 4, // Left face
-	2, 1, 4, // Right face
-	1, 0, 4  // Back face
-};
-
-std::vector<GLfloat> sphere_vertices;
-std::vector<GLfloat> sphere_normals;
-std::vector<GLfloat> sphere_texcoords;
-std::vector<GLushort> sphere_indices;
-
-std::vector<GLfloat> cylinder_vertices;
-std::vector<GLfloat> cylinder_normals;
-std::vector<GLfloat> cylinder_texcoords;
-std::vector<GLushort> cylinder_indices;
-
-void ModuleMesh::CreateCubeDirect() {
-
-	//-------------------------------------Cube made by triangles----------------------------------------------//
-	glLineWidth(2.0f);
-	glDisable(GL_CULL_FACE);
-	glBegin(GL_TRIANGLES);
-
-	glVertex3f(1.f, 1.f, 1.f);
-	glVertex3f(-1.f, 1.f, 1.f);
-	glVertex3f(-1.f, -1.f, 1.f);
-
-	glVertex3f(-1.f, -1.f, 1.f);
-	glVertex3f(1.f, -1.f, 1.f);
-	glVertex3f(1.f, 1.f, 1.f);
-
-	glVertex3f(1.f, 1.f, 1.f);
-	glVertex3f(1.f, -1.f, 1.f);
-	glVertex3f(1.f, -1.f, -1.f);
-
-	glVertex3f(1.f, -1.f, -1.f);
-	glVertex3f(1.f, 1.f, -1.f);
-	glVertex3f(1.f, 1.f, 1.f);
-
-	glVertex3f(1.f, 1.f, 1.f);
-	glVertex3f(1.f, 1.f, -1.f);
-	glVertex3f(-1.f, 1.f, -1.f);
-
-	glVertex3f(-1.f, 1.f, -1.f);
-	glVertex3f(-1.f, 1.f, 1.f);
-	glVertex3f(1.f, 1.f, 1.f);
-
-	glVertex3f(-1.f, 1.f, 1.f);
-	glVertex3f(-1.f, 1.f, -1.f);
-	glVertex3f(-1.f, -1.f, -1.f);
-
-	glVertex3f(-1.f, -1.f, -1.f);
-	glVertex3f(-1.f, -1.f, 1.f);
-	glVertex3f(-1.f, 1.f, 1.f);
-
-	glVertex3f(-1.f, -1.f, -1.f);
-	glVertex3f(1.f, -1.f, -1.f);
-	glVertex3f(1.f, -1.f, 1.f);
-
-	glVertex3f(1.f, -1.f, 1.f);
-	glVertex3f(-1.f, -1.f, 1.f);
-	glVertex3f(-1.f, -1.f, -1.f);
-
-	glVertex3f(1.f, -1.f, -1.f);
-	glVertex3f(-1.f, -1.f, -1.f);
-	glVertex3f(-1.f, 1.f, -1.f);
-
-	glVertex3f(-1.f, 1.f, -1.f);
-	glVertex3f(1.f, 1.f, -1.f);
-	glVertex3f(1.f, -1.f, -1.f);
-	glEnd();
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void ModuleMesh::CreateCubeVertex() {
-
-	uint my_id = 0;
-	glGenBuffers(1, (GLuint*)&(my_id));
-	glBindBuffer(GL_ARRAY_BUFFER, my_id);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data) * 3, g_vertex_buffer_data, GL_STATIC_DRAW);
-
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glBindBuffer(GL_ARRAY_BUFFER, my_id);
-	glVertexPointer(3, GL_FLOAT, 0, NULL);
-	//… bind and use other buffers
-	glDrawArrays(GL_TRIANGLES, 0, sizeof(g_vertex_buffer_data));
-	glDisableClientState(GL_VERTEX_ARRAY);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void ModuleMesh::CreateCubeIndex() {
-
-	uint my_indices = 0;
-	glGenBuffers(1, (GLuint*)&(my_indices));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, my_indices);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * 36, indices, GL_STATIC_DRAW);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, vertices);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, my_indices);
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, NULL);
-	glDisableClientState(GL_VERTEX_ARRAY);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void ModuleMesh::CreatePyramid() {
-
-	uint my_indices = 0;
-	glGenBuffers(1, (GLuint*)&(my_indices));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, my_indices);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * 18, pyramid_indices, GL_STATIC_DRAW);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glVertexPointer(3, GL_FLOAT, 0, pyramid_vertices);
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, my_indices);
-	glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, NULL);
-	glDisableClientState(GL_VERTEX_ARRAY);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void ModuleMesh::CreateSphere(float radius, unsigned int rings, unsigned int sectors) {
-
-	float const R = 1. / (float)(rings - 1);
-	float const S = 1. / (float)(sectors - 1);
-	int r, s;
-
-	sphere_vertices.resize(rings * sectors * 3);
-	sphere_normals.resize(rings * sectors * 3);
-	sphere_texcoords.resize(rings * sectors * 2);
-	std::vector<GLfloat>::iterator v = sphere_vertices.begin();
-	std::vector<GLfloat>::iterator n = sphere_normals.begin();
-	std::vector<GLfloat>::iterator t = sphere_texcoords.begin();
-	for (r = 0; r < rings; r++) for (s = 0; s < sectors; s++) {
-		float const y = sin(-M_PI_2 + M_PI * r * R);
-		float const x = cos(2 * M_PI * s * S) * sin(M_PI * r * R);
-		float const z = sin(2 * M_PI * s * S) * sin(M_PI * r * R);
-
-		*t++ = s * S;
-		*t++ = r * R;
-
-		*v++ = x * radius;
-		*v++ = y * radius;
-		*v++ = z * radius;
-
-		*n++ = x;
-		*n++ = y;
-		*n++ = z;
+	if (_resource != nullptr)
+	{
+		App->res->ReleaseResource(_resource->GetUID());
+		_resource = nullptr;
 	}
+}
 
-	sphere_indices.resize(rings * sectors * 4);
-	std::vector<GLushort>::iterator i = sphere_indices.begin();
-	for (r = 0; r < rings - 1; r++) for (s = 0; s < sectors - 1; s++) {
-		*i++ = (r + 1) * sectors + s;
-		*i++ = (r + 1) * sectors + (s + 1);
-		*i++ = r * sectors + (s + 1);
-		*i++ = r * sectors + s;
+
+void GnMesh::SetResourceUID(uint UID)
+{
+	_resourceUID = UID;
+	_resource = (ResourceMesh*)App->res->RequestResource(_resourceUID);
+	if (_resource != nullptr)
+		GenerateAABB();
+
+	//App->resources->ReleaseResource(_resourceUID);
+}
+
+Resource* GnMesh::GetResource(ResourceType type)
+{
+	return _resource;
+}
+
+void GnMesh::GenerateAABB()
+{
+	_AABB.SetNegativeInfinity();
+	_AABB.Enclose((float3*)_resource->vertices, _resource->vertices_amount);
+}
+
+AABB GnMesh::GetAABB()
+{
+	return _AABB;
+}
+
+
+void GnMesh::Update()
+{
+	Render();
+}
+
+void GnMesh::Render()
+{
+	if (!App->res->Exists(_resourceUID)) {
+		_resource = nullptr;
+		return;
 	}
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	glVertexPointer(3, GL_FLOAT, 0, &sphere_vertices[0]);
-	glNormalPointer(GL_FLOAT, 0, &sphere_normals[0]);
-	glTexCoordPointer(2, GL_FLOAT, 0, &sphere_texcoords[0]);
-	glDrawElements(GL_QUADS, sphere_indices.size(), GL_UNSIGNED_SHORT, &sphere_indices[0]);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void ModuleMesh::CreateCylinder(float radius, float height, int sides) {
-	const float PI = 3.1415926f;
-	int sectorCount = 36;
-	float sectorStep = 2 * PI / sectorCount;
-	float sectorAngle;  // radian
-
-	std::vector<float> unitCircleVertices;
-	for (int i = 0; i <= sectorCount; ++i)
-	{
-		sectorAngle = i * sectorStep;
-		unitCircleVertices.push_back(cos(sectorAngle)); // x
-		unitCircleVertices.push_back(sin(sectorAngle)); // y
-		unitCircleVertices.push_back(0);                // z
-	}
-
-	std::vector<float>().swap(cylinder_vertices);
-	std::vector<float>().swap(cylinder_normals);
-	std::vector<float>().swap(cylinder_texcoords);
-
-	// get unit circle vectors on XY-plane
-	std::vector<float> unitVertices = unitCircleVertices;
-
-	// put side vertices to arrays
-	for (int i = 0; i < 2; ++i)
-	{
-		float h = -height / 2.0f + i * height;           // z value; -h/2 to h/2
-		float t = 1.0f - i;                              // vertical tex coord; 1 to 0
-
-		for (int j = 0, k = 0; j <= sectorCount; ++j, k += 3)
-		{
-			float ux = unitVertices[k];
-			float uy = unitVertices[k + 1];
-			float uz = unitVertices[k + 2];
-			// position vector
-			cylinder_vertices.push_back(ux * radius);             // vx
-			cylinder_vertices.push_back(uy * radius);             // vy
-			cylinder_vertices.push_back(h);                       // vz
-			// normal vector
-			cylinder_normals.push_back(ux);                       // nx
-			cylinder_normals.push_back(uy);                       // ny
-			cylinder_normals.push_back(uz);                       // nz
-			// texture coordinate
-			cylinder_texcoords.push_back((float)j / sectorCount); // s
-			cylinder_texcoords.push_back(t);                      // t
-		}
-	}
-
-	// the starting index for the base/top surface
-	//NOTE: it is used for generating indices later
-	int baseCenterIndex = (int)cylinder_vertices.size() / 3;
-	int topCenterIndex = baseCenterIndex + sectorCount + 1; // include center vertex
-
-	// put base and top vertices to arrays
-	for (int i = 0; i < 2; ++i)
-	{
-		float h = -height / 2.0f + i * height;           // z value; -h/2 to h/2
-		float nz = -1 + i * 2;                           // z value of normal; -1 to 1
-
-		// center point
-		cylinder_vertices.push_back(0);     cylinder_vertices.push_back(0);     cylinder_vertices.push_back(h);
-		cylinder_normals.push_back(0);      cylinder_normals.push_back(0);      cylinder_normals.push_back(nz);
-		cylinder_texcoords.push_back(0.5f); cylinder_texcoords.push_back(0.5f);
-
-		for (int j = 0, k = 0; j < sectorCount; ++j, k += 3)
-		{
-			float ux = unitVertices[k];
-			float uy = unitVertices[k + 1];
-			// position vector
-			cylinder_vertices.push_back(ux * radius);             // vx
-			cylinder_vertices.push_back(uy * radius);             // vy
-			cylinder_vertices.push_back(h);                       // vz
-			// normal vector
-			cylinder_normals.push_back(0);                        // nx
-			cylinder_normals.push_back(0);                        // ny
-			cylinder_normals.push_back(nz);                       // nz
-			// texture coordinate
-			cylinder_texcoords.push_back(-ux * 0.5f + 0.5f);      // s
-			cylinder_texcoords.push_back(-uy * 0.5f + 0.5f);      // t
-		}
-	}
-
-	std::vector<int> indices;
-	int k1 = 0;                         // 1st vertex index at base
-	int k2 = sectorCount + 1;           // 1st vertex index at top
-
-	// indices for the side surface
-	for (int i = 0; i < sectorCount; ++i, ++k1, ++k2)
-	{
-		// 2 triangles per sector
-		// k1 => k1+1 => k2
-		cylinder_indices.push_back(k1);
-		cylinder_indices.push_back(k1 + 1);
-		cylinder_indices.push_back(k2);
-
-		// k2 => k1+1 => k2+1
-		cylinder_indices.push_back(k2);
-		cylinder_indices.push_back(k1 + 1);
-		cylinder_indices.push_back(k2 + 1);
-	}
-
-	// indices for the base surface
-	//NOTE: baseCenterIndex and topCenterIndices are pre-computed during vertex generation
-	//      please see the previous code snippet
-	for (int i = 0, k = baseCenterIndex + 1; i < sectorCount; ++i, ++k)
-	{
-		if (i < sectorCount - 1)
-		{
-			cylinder_indices.push_back(baseCenterIndex);
-			cylinder_indices.push_back(k + 1);
-			cylinder_indices.push_back(k);
-		}
-		else // last triangle
-		{
-			cylinder_indices.push_back(baseCenterIndex);
-			cylinder_indices.push_back(baseCenterIndex + 1);
-			cylinder_indices.push_back(k);
-		}
-	}
-
-	// indices for the top surface
-	for (int i = 0, k = topCenterIndex + 1; i < sectorCount; ++i, ++k)
-	{
-		if (i < sectorCount - 1)
-		{
-			cylinder_indices.push_back(topCenterIndex);
-			cylinder_indices.push_back(k);
-			cylinder_indices.push_back(k + 1);
-		}
-		else // last triangle
-		{
-			cylinder_indices.push_back(topCenterIndex);
-			cylinder_indices.push_back(k);
-			cylinder_indices.push_back(topCenterIndex + 1);
-		}
-	}
-
-	glRotatef(90, 1, 0, 0);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-	glVertexPointer(3, GL_FLOAT, 0, &cylinder_vertices[0]);
-	glNormalPointer(GL_FLOAT, 0, &cylinder_normals[0]);
-	glTexCoordPointer(2, GL_FLOAT, 0, &cylinder_texcoords[0]);
-	glDrawElements(GL_TRIANGLES, cylinder_indices.size(), GL_UNSIGNED_SHORT, &cylinder_indices[0]);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-}
-
-void ModuleMesh::LoadFBXBuffer() {
-
-	glGenBuffers(1, (GLuint*)&id_vertex);
-	glBindBuffer(GL_ARRAY_BUFFER, id_vertex);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * num_vertex * 3, vertex, GL_STATIC_DRAW);
-
-	glGenBuffers(1, (GLuint*)&id_index);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_index);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint) * num_index, index, GL_STATIC_DRAW);
-
-	glGenBuffers(1, (GLuint*)&id_normals);
-	glBindBuffer(GL_ARRAY_BUFFER, id_normals);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(uint) * num_normals * 3, normals, GL_STATIC_DRAW);
-
-	glGenBuffers(1, (GLuint*)&id_texcoords);
-	glBindBuffer(GL_ARRAY_BUFFER, id_texcoords);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * num_texcoords * 2, texcoords, GL_STATIC_DRAW);
-}
-
-void ModuleMesh::Update()
-{
-	RenderFBX();
-	if (App->gui->vertexlines)
-	{
-		DrawVertexNormalLines();
-	}
-	if (App->gui->facelines)
-	{
-		DrawFaceNormalLines();
-	}
-}
-
-void ModuleMesh::RenderFBX() {
-
-	if (!App->gui->checker)
-	{
-		if (reload)
-		{
-			glDisable(GL_TEXTURE_2D);
-			App->importer->LoadTexture(App->importer->materialfilename);
-			reload = false;
-		}
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, App->importer->Gl_Tex);
-
-	}
-	if (App->gui->checker)
-	{
-		reload = true;
-		glEnable(GL_TEXTURE_2D);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64,
-			0, GL_RGBA, GL_UNSIGNED_BYTE, checkerImage);
-	}
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-	glBindBuffer(GL_ARRAY_BUFFER, id_vertex);
+	//vertices
+	glBindBuffer(GL_ARRAY_BUFFER, _resource->vertices_buffer);
 	glVertexPointer(3, GL_FLOAT, 0, NULL);
 
-	glBindBuffer(GL_ARRAY_BUFFER, id_normals);
+	//normals
+	glBindBuffer(GL_NORMAL_ARRAY, _resource->normals_buffer);
 	glNormalPointer(GL_FLOAT, 0, NULL);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_index);
-	glBindBuffer(GL_ARRAY_BUFFER, id_texcoords);
+	//textures
+	glBindBuffer(GL_ARRAY_BUFFER, _resource->texcoords_buffer);
 	glTexCoordPointer(2, GL_FLOAT, 0, NULL);
+	//indices
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _resource->indices_buffer);
 
-	glDrawElements(GL_TRIANGLES, this->num_index, GL_UNSIGNED_INT, NULL);
+	glPushMatrix();
+	glMultMatrixf((float*)&_gameObject->GetTransform()->GetGlobalTransform().Transposed());
+
+	ModuleMaterial* material = dynamic_cast<ModuleMaterial*>(_gameObject->GetComponent(ComponentType::MATERIAL));
+
+	if (material != nullptr)
+		material->BindTexture();
+
+	glDrawElements(GL_TRIANGLES, _resource->indices_amount, GL_UNSIGNED_INT, NULL);
+
+	if (draw_vertex_normals || App->renderer3D->draw_vertex_normals)
+		DrawVertexNormals();
+
+	if (draw_face_normals || App->renderer3D->draw_face_normals)
+		DrawFaceNormals();
+
+	//App->renderer3D->DrawAABB(_AABB);
+
+	glPopMatrix();
+
+	//clean buffers
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_NORMAL_ARRAY, 0);
-	glDisableClientState(GL_NORMAL_ARRAY);
+	glBindBuffer(GL_TEXTURE_COORD_ARRAY, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisable(GL_TEXTURE_2D);
 }
 
-void ModuleMesh::DrawVertexNormalLines()
+void GnMesh::OnEditor()
+{
+	if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::Checkbox(" Enabled", &enabled);
+
+		ImGui::Separator();
+		ImGui::Spacing();
+
+		std::string meshID = "Mesh: ";
+		meshID.append(_resource->name);
+		ImGui::Button(meshID.c_str());
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("MESHES"))
+			{
+				IM_ASSERT(payload->DataSize == sizeof(int));
+				int payload_n = *(const int*)payload->Data;
+				SetResourceUID(payload_n);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
+		ImGui::Spacing();
+
+		ImGui::Text("Assets path: %s", _resource->assetsFile.c_str());
+		ImGui::Text("Library path: %s", _resource->libraryFile.c_str());
+
+		ImGui::Spacing();
+		ImGui::Separator();
+		ImGui::Spacing();
+
+		ImGui::Text("Vertices: %d Indices: %d", _resource->vertices_amount, _resource->indices_amount);
+		ImGui::Spacing();
+
+
+
+		ImGui::Spacing();
+
+		ImGui::Checkbox("Vertex Normals", &draw_vertex_normals);
+		ImGui::SameLine();
+		ImGui::Checkbox("Face Normals", &draw_face_normals);
+
+		ImGui::Spacing();
+	}
+}
+
+void GnMesh::DrawVertexNormals()
+{
+	if (_resource->normals_buffer == -1)
+		return;
+
+	float normal_lenght = 0.5f;
+
+	//vertices normals
+	glBegin(GL_LINES);
+	for (size_t i = 0, c = 0; i < _resource->vertices_amount * 3; i += 3, c += 4)
+	{
+		glColor3f(0.0f, 0.85f, 0.85f);
+		//glColor4f(colors[c], colors[c + 1], colors[c + 2], colors[c + 3]);
+		glVertex3f(_resource->vertices[i], _resource->vertices[i + 1], _resource->vertices[i + 2]);
+
+		glVertex3f(_resource->vertices[i] + (_resource->normals[i] * normal_lenght),
+			_resource->vertices[i + 1] + (_resource->normals[i + 1] * normal_lenght),
+			_resource->vertices[i + 2] + (_resource->normals[i + 2]) * normal_lenght);
+	}
+
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glEnd();
+}
+
+void GnMesh::DrawFaceNormals()
+{
+	if (_resource->normals_buffer == -1)
+		return;
+
+	float normal_lenght = 0.5f;
+
+	//vertices normals
+	glBegin(GL_LINES);
+	for (size_t i = 0; i < _resource->vertices_amount * 3; i += 3)
+	{
+		glColor3f(1.0f, 0.85f, 0.0f);
+		float vx = (_resource->vertices[i] + _resource->vertices[i + 3] + _resource->vertices[i + 6]) / 3;
+		float vy = (_resource->vertices[i + 1] + _resource->vertices[i + 4] + _resource->vertices[i + 7]) / 3;
+		float vz = (_resource->vertices[i + 2] + _resource->vertices[i + 5] + _resource->vertices[i + 8]) / 3;
+
+		float nx = (_resource->normals[i] + _resource->normals[i + 3] + _resource->normals[i + 6]) / 3;
+		float ny = (_resource->normals[i + 1] + _resource->normals[i + 4] + _resource->normals[i + 7]) / 3;
+		float nz = (_resource->normals[i + 2] + _resource->normals[i + 5] + _resource->normals[i + 8]) / 3;
+
+		glVertex3f(vx, vy, vz);
+
+		glVertex3f(vx + (_resource->normals[i] * normal_lenght),
+			vy + (_resource->normals[i + 1] * normal_lenght),
+			vz + (_resource->normals[i + 2]) * normal_lenght);
+	}
+
+	glColor3f(1.0f, 1.0f, 1.0f);
+
+	glEnd();
+}
+
+
+// --------------------------------------------------------------------------------------------------------------------------------
+
+// GnCube =========================================================================================================================
+
+GnCube::GnCube() : GnMesh()
+{
+	name = { "Cube" };
+
+	
+}
+
+GnCube::~GnCube() {}
+
+// --------------------------------------------------------------------------------------------------------------------------------
+
+// GnPlane ========================================================================================================================
+
+GnPlane::GnPlane() : GnMesh()
+{
+}
+
+GnPlane::~GnPlane() {}
+
+// --------------------------------------------------------------------------------------------------------------------------------
+
+// GnPyramid ======================================================================================================================
+
+GnPyramid::GnPyramid() : GnMesh()
+{
+	name = { "Pyramid" };
+
+}
+
+GnPyramid::~GnPyramid() {}
+
+// --------------------------------------------------------------------------------------------------------------------------------
+
+// GnSphere =======================================================================================================================
+
+GnSphere::GnSphere() : GnMesh()
 {
 
+}
+
+GnSphere::~GnSphere()
+{
+	//vertices.clear();
+	//indices.clear();
+}
+
+void GnSphere::Render()
+{
+	//glEnableClientState(GL_VERTEX_ARRAY);
+	//glVertexPointer(3, GL_FLOAT, 0, &vertices[0]);
+	//glDrawElements(GL_QUADS, indices.size() , GL_UNSIGNED_SHORT, &indices[0]);
+	//glDisableClientState(GL_VERTEX_ARRAY);
+}
+
+// -----------------------------------------------------------------------------------------------------------------------------
+
+// GnCylinder ==================================================================================================================
+
+GnCylinder::GnCylinder() : GnMesh(), radius(1), height(2), sides(16)
+{
+	name = { "Cylinder" };
+	CalculateGeometry();
+}
+
+GnCylinder::GnCylinder(float g_radius, float g_height, int g_sides) : GnMesh(), radius(g_radius), height(g_height), sides(g_sides)
+{
+	CalculateGeometry();
+}
+
+GnCylinder::~GnCylinder() {}
+
+void GnCylinder::CalculateGeometry()
+{
+	
+}
+
+// --------------------------------------------------------------------------------------------------------------------------------
+
+// GnGrid =========================================================================================================================
+
+GnGrid::GnGrid(int g_size)
+{
+	if ((g_size % 2) != 0)
+		g_size++;
+
+	size = g_size;
+}
+
+GnGrid::~GnGrid() {}
+
+void GnGrid::Render()
+{
 	glBegin(GL_LINES);
-	//glColor3f(1.0f, 0.0f, 0.0f);
 
-	for (size_t i = 0; i < num_vertex * 3; i += 3)
+	//Vertical Lines
+	for (float x = -size * 0.5f; x <= size * 0.5f; x++)
 	{
-		float v_x = vertex[i];
-		float v_y = vertex[i + 1];
-		float v_z = vertex[i + 2];
+		glVertex3f(x, 0, -size * 0.5f);
+		glVertex3f(x, 0, size * 0.5f);
+	}
 
-		float n_x = normals[i];
-		float n_y = normals[i + 1];
-		float n_z = normals[i + 2];
-
-		glVertex3f(v_x, v_y, v_z);
-		glVertex3f(v_x + n_x, v_y + n_y, v_z + n_z);
+	//Hortiontal Lines
+	for (float z = -size * 0.5f; z <= size * 0.5f; z++)
+	{
+		glVertex3f(-size * 0.5f, 0, z);
+		glVertex3f(size * 0.5f, 0, z);
 	}
 
 	glEnd();
 }
 
-void ModuleMesh::DrawFaceNormalLines() {
+// --------------------------------------------------------------------------------------------------------------------------------
 
-	glBegin(GL_LINES);
-	//glColor3f(1.0f, 1.0f, 0.0f);
+// GnCone =========================================================================================================================
 
-	for (size_t i = 0; i < num_vertex * 3; i += 3)
-	{
-		float x = (vertex[i] + vertex[i + 3] + vertex[i + 6]) / 3;
-		float y = (vertex[i + 1] + vertex[i + 4] + vertex[i + 7]) / 3;
-		float z = (vertex[i + 2] + vertex[i + 5] + vertex[i + 8]) / 3;
-
-		float nx = normals[i];
-		float ny = normals[i + 1];
-		float nz = normals[i + 2];
-
-		glVertex3f(x, y, z);
-		glVertex3f(x + nx, y + ny, z + nz);
-	}
-	glEnd();
-
+GnCone::GnCone() : GnMesh(), radius(1), height(1)
+{
+	name = { "Cone" };
+	CalculateGeometry(8);
 }
 
-void ModuleMesh::LoadingCheckerTextures() {
-
-	for (int i = 0; i < 64; i++) {
-		for (int j = 0; j < 64; j++) {
-			int c = ((((i & 0x8) == 0) ^ (((j & 0x8)) == 0))) * 255;
-			checkerImage[i][j][0] = (GLubyte)c;
-			checkerImage[i][j][1] = (GLubyte)c;
-			checkerImage[i][j][2] = (GLubyte)c;
-			checkerImage[i][j][3] = (GLubyte)255;
-		}
-	}
-
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glGenTextures(1, &texture_id);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 64, 64,
-		0, GL_RGBA, GL_UNSIGNED_BYTE, checkerImage);
-
+GnCone::GnCone(float g_radius, float g_height, int sides) : GnMesh(), radius(g_radius), height(g_height)
+{
+	name = { "Cone" };
+	CalculateGeometry(sides);
 }
+
+GnCone::~GnCone() {}
+
+void GnCone::CalculateGeometry(int sides)
+{
+	
+}
+

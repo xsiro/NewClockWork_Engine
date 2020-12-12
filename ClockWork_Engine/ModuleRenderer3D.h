@@ -1,55 +1,81 @@
 #pragma once
 #include "Module.h"
 #include "Globals.h"
-#include "glmath.h"
+#include "MathGeoLib/include/MathGeoLib.h"
 #include "Light.h"
-#include "ModuleImporter.h"
-
-typedef void* SDL_GLContext;
-struct Mesh;
-typedef unsigned int GLuint;
-typedef signed char GLbyte;
 
 #define MAX_LIGHTS 8
+
+typedef unsigned int GLuint;
+typedef unsigned int GLenum;
+typedef unsigned char GLubyte;
+typedef void* SDL_GLContext;
+class Camera;
+
+enum DisplayMode
+{
+	SOLID,
+	WIREFRAME
+};
 
 class ModuleRenderer3D : public Module
 {
 public:
-	ModuleRenderer3D(Application* app, bool start_enabled = true);
+	ModuleRenderer3D(bool start_enabled = true);
 	~ModuleRenderer3D();
 
 	bool Init();
-	update_status PreUpdate(float dt);
-	update_status PostUpdate(float dt);
+	
+	update_status PreUpdate(float dt) override;
+	update_status Update(float dt) override;
+	update_status PostUpdate(float dt) override;
 	bool CleanUp();
 
-	
-	void DrawVertexNormalLines();
-	void DrawFaceNormalLines();
-	void LoadTextures();
 	void OnResize(int width, int height);
-	void SetDepthtest(bool state);
-	void SetCullface(bool state);
-	void SetLighting(bool state);
-	void SetCubemap(bool state);
-	void SetColormaterial(bool state);
-	void SetTexture2D(bool state);
-	void CreateCube();
-	void RenderFBX();
-	void LoadFBXBuffer();
-	void SetPolygonssmooth(bool state);
-	void CreateVertexCube();
-	void CreateIndexCube();
-	
-	
+	void UpdateProjectionMatrix(float* projectionMatrix);
+
+	void DrawAABB(float3* aabb);
+	DisplayMode GetDisplayMode();
+	void SetDisplayMode(DisplayMode display);
+	void SetMainCamera(Camera* camera);
+	Camera* GetMainCamera();
+	bool IsInsideCameraView(AABB aabb);
+
+	void SetCapActive(GLenum cap, bool active);
+	void SetVSYNC(bool enabled);
+
+	void DrawRay();
+
+private:
+	void GenerateBuffers();
+	void DrawDirectModeCube();
+	void BeginDebugDraw();
+	void EndDebugDraw();
+
+	GLuint frameBuffer;
 
 public:
+	GLuint colorTexture;
+	GLuint renderBuffer;
+
+	GLuint depthRenderBuffer;
+	GLuint depthTexture;
 
 	Light lights[MAX_LIGHTS];
 	SDL_GLContext context;
-	mat3x3 NormalMatrix;
-	mat4x4 ModelMatrix, ViewMatrix, ProjectionMatrix;
+	//mat3x3 NormalMatrix;
+	//mat4x4 ModelMatrix, ViewMatrix, ProjectionMatrix;
+	DisplayMode display_mode;
 
-	GLuint texture_id;
-	GLbyte checkImage[64][64][4];
+	LineSegment _ray;
+	bool cullEditorCamera;
+
+	bool draw_vertex_normals;
+	bool draw_face_normals;
+
+	bool vsync;
+
+private:
+	bool debug;
+	Camera* _mainCamera;
 };

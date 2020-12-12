@@ -97,6 +97,7 @@ public:
 	void Hierarchy();
 	bool show_configuration_window;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	void OnResize(ImVec2 window_size);
 
 	int fps;
 	int height;
@@ -112,7 +113,7 @@ public:
 	const char* GetName() const;
 	const char* name;
 	bool scroll;
-
+	bool scene_window_focused;
 
 	SDL_GLContext gl_context; 
 	//ImGuiIO* io = nullptr;
@@ -124,7 +125,9 @@ public:
 	GameObject* selected;
 	char nam[128];
 	ModuleTransform* trans;
-
+	ImVec2 image_size;
+	ImVec2 sceneWindowOrigin;
+	ImVec2 mouseScenePosition;
 };
 
 #endif // __ModuleGui_H__

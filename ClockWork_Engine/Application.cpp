@@ -12,7 +12,7 @@ Application::Application()
 	camera = new ModuleCamera3D(this);
 	physics = new ModulePhysics3D(this);
 	importer = new ModuleImporter(this);
-	filesys = new FileSystem(this);
+	res = new ModuleResources(this);
 	
 
 
@@ -30,7 +30,7 @@ Application::Application()
 	AddModule(physics);
 	
 	AddModule(importer);
-	AddModule(filesys);
+	
 	// Scenes
 	AddModule(scene);
 	
@@ -258,4 +258,59 @@ int Application::Reserved() {
 	int reserved;
 	glGetIntegerv(GL_GPU_MEMORY_INFO_EVICTED_MEMORY_NVX, &reserved);
 	return reserved / 1024;
+}
+
+float Application::GetFPS() { return fps; }
+
+float Application::GetLastDt() { return dt; }
+
+int Application::GetFPSMax()
+{
+	return 1000 / max_ms;
+}
+
+void Application::SetFPSMax(int fps_cap)
+{
+	max_ms = 1000 / fps_cap;
+}
+
+Hardware Application::GetHardware()
+{
+	Hardware specs;
+
+	//CPU
+	specs.cpu_count = SDL_GetCPUCount();
+	specs.cache = SDL_GetCPUCacheLineSize();
+
+	//RAM
+	specs.ram = SDL_GetSystemRAM() / 1000;
+
+	//Caps
+	specs.RDTSC = SDL_HasRDTSC();
+	specs.MMX = SDL_HasMMX();
+	specs.SSE = SDL_HasSSE();
+	specs.SSE2 = SDL_HasSSE2();
+	specs.SSE3 = SDL_HasSSE3();
+	specs.SSE41 = SDL_HasSSE41();
+	specs.SSE42 = SDL_HasSSE42();
+	specs.AVX = SDL_HasAVX();
+	specs.AVX2 = SDL_HasAVX2();
+	specs.AltiVec = SDL_HasAltiVec();
+
+	if (specs.RDTSC) { specs.caps += "SDTSC"; }
+	if (specs.MMX) { specs.caps += ", MMX"; }
+	if (specs.SSE) { specs.caps += ", SSE"; }
+	if (specs.SSE2) { specs.caps += ", SSE2"; }
+	if (specs.SSE3) { specs.caps += ", SSE3"; }
+	if (specs.SSE41) { specs.caps += ", SSE41"; }
+	if (specs.SSE42) { specs.caps += ", SSE42"; }
+	if (specs.AVX) { specs.caps += ", AVX2"; }
+	if (specs.AltiVec) { specs.caps += ", AltiVec"; }
+
+	//GPU
+	//GLubyte* vendor = 
+	specs.gpu = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	specs.gpu_brand = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+
+	return specs;
 }

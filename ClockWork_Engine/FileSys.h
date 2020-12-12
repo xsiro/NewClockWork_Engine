@@ -1,73 +1,58 @@
-
 #pragma once
 #include "Globals.h"
-#include "Module.h"
+
 #include <vector>
 #include <string>
-struct SDL_RWops;
-int close_sdl_rwops(SDL_RWops* rw);
 
-struct aiFileIO;
-
-//struct BASS_FILEPROCS;
-class Config;
-struct PathNode;
-
-class GameObject;
-struct ModuleMaterial;
-class ModuleMesh;
-class aiScene;
-struct aiNode;
-
-class FileSystem : public Module
+namespace FileSys
 {
-public:
+	static bool normalize_scales = true;
 
-	FileSystem(Application* app, bool start_enabled = true);// const char* game_path = nullptr);
+	void Init();
+	void CleanUp();
 
-	// Destructor
-	~FileSystem();
-
-	// Called before render is available
-	bool Init(Config& config);
-
-	// Called before quitting
-	bool CleanUp() override;
+	void GetPhysFSVersion(std::string& version_str);
 
 	void CreateLibraryDirectories();
-
-	// Utility functions
 	bool AddPath(const char* path_or_zip);
-	bool Exists(const char* file) const;
+	bool Exists(const char* file);
 	bool CreateDir(const char* dir);
-	bool IsDirectory(const char* file) const;
-	const char* GetWriteDir() const;
-	void DiscoverFiles(const char* directory, std::vector<std::string>& file_list, std::vector<std::string>& dir_list) const;
-	void GetAllFilesWithExtension(const char* directory, const char* extension, std::vector<std::string>& file_list) const;
-	PathNode GetAllFiles(const char* directory, std::vector<std::string>* filter_ext = nullptr, std::vector<std::string>* ignore_ext = nullptr) const;
-	void GetRealDir(const char* path, std::string& output) const;
-	std::string GetPathRelativeToAssets(const char* originalPath) const;
+	bool IsDirectory(const char* file);
+	const char* GetWriteDir();
 
-	bool HasExtension(const char* path) const;
-	bool HasExtension(const char* path, std::string extension) const;
-	bool HasExtension(const char* path, std::vector<std::string> extensions) const;
+	void DiscoverFiles(const char* directory, std::vector<std::string>& file_list, std::vector<std::string>& dir_list);
+	void DiscoverFilesRecursive(const char* directory, std::vector<std::string>& file_list, std::vector<std::string>& dir_list);
+	void GetAllFilesWithExtension(const char* directory, const char* extension, std::vector<std::string>& file_list);
+	void GetRealDir(const char* path, std::string& output);
+	std::string GetPathRelativeToAssets(const char* originalPath);
 
-	std::string NormalizePath(const char* path) const;
-	void SplitFilePath(const char* full_path, std::string* path, std::string* file = nullptr, std::string* extension = nullptr) const;
+	bool HasExtension(const char* path);
+	bool HasExtension(const char* path, std::string extension);
+	bool HasExtension(const char* path, std::vector<std::string> extensions);
+
+	std::string ProcessPath(const char* path);
+	std::string NormalizePath(const char* path);
+	void SplitFilePath(const char* full_path, std::string* path, std::string* file = nullptr, std::string* extension = nullptr);
 
 	// Open for Read/Write
-	unsigned int Load(const char* path, const char* file, char** buffer) const;
-	unsigned int Load(const char* file, char** buffer) const;
+	unsigned int Load(const char* path, const char* file, char** buffer);
+	unsigned int Load(const char* file, char** buffer);
 
 	bool DuplicateFile(const char* file, const char* dstFolder, std::string& relativePath);
 	bool DuplicateFile(const char* srcFile, const char* dstFile);
 
-	unsigned int Save(const char* file, const void* buffer, unsigned int size, bool append = false) const;
+	void Rename(const char* old_name, const char* new_name);
+
+	unsigned int Save(const char* file, const void* buffer, unsigned int size, bool append = false);
 	bool Remove(const char* file);
+	bool Delete(const char* file);
 
-	//uint64 GetLastModTime(const char* filename);
-	std::string GetUniqueName(const char* path, const char* name) const;
+	uint64 GetLastModTime(const char* filename);
+	std::string GetUniqueName(const char* path, const char* name);
 
-	void LoadFile(const char* file_path);
-
-};
+	std::string GetFileFormat(const char* path);
+	std::string GetFile(const char* path);
+	std::string GetFileName(const char* path);
+	std::string GetFolder(const char* path);
+	std::string ToLower(const char* path);
+}

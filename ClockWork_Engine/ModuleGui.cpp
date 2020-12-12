@@ -283,28 +283,11 @@ update_status ModuleGui::Update(float dt)
 		ImGui::Begin("Inspector", &inspector);
 		ImGui::Text("Inspector");
 		if (selected != nullptr) {
-			bool gameobjectCheck = selected->IsEnabled();
-			ImGui::Checkbox("Active", &gameobjectCheck);
-			(gameobjectCheck) ? selected->Enable() : selected->Disable();
-			ImGui::SameLine();
-			ImGui::InputText("Name", nam, ARRAYSIZE(nam));
-			selected->ChangeName(nam);
+		
 
 			if (ImGui::CollapsingHeader("Transformation"))
 			{
-				float3 tempValues = trans->GetPosition();
-				float pos[3] = { tempValues.x, tempValues.y, tempValues.z };
-				tempValues = trans->GetRotationEuler();
-				float rot[3] = { tempValues.x, tempValues.y, tempValues.z };
-				tempValues = trans->GetScale();
-				float scl[3] = { tempValues.x, tempValues.y, tempValues.z };
-				ImGui::DragFloat3("Position", pos, 0.05f);
-				ImGui::DragFloat3("Rotation", rot, 0.05f);
-				ImGui::DragFloat3("Scale", scl, 0.05f);
-				float3 pos_ = { pos[0], pos[1], pos[2] };
-				float3 rot_ = { rot[0], rot[1], rot[2] };
-				float3 scl_ = { scl[0], scl[1], scl[2] };
-				trans->SetTransform(pos_, rot_, scl_);
+				
 			}
 		}
 			if (ImGui::CollapsingHeader("Mesh"))
@@ -639,4 +622,11 @@ void ModuleGui::Hierarchy()
 
 }
 
+void ModuleGui::OnResize(ImVec2 window_size)
+{
+	image_size = window_size;
+
+	App->camera->OnResize(image_size.x, image_size.y);
+	App->renderer3D->OnResize(image_size.x, image_size.y);
+}
 

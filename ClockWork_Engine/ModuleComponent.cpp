@@ -1,38 +1,44 @@
-#pragma once
 #include "ModuleComponent.h"
 
-ModuleComponent::ModuleComponent()
+ModuleComponent::ModuleComponent() : enabled(true), _gameObject(nullptr) {}
+
+ModuleComponent::ModuleComponent(GameObject* gameObject)
 {
+    _gameObject = gameObject;
 }
 
 ModuleComponent::~ModuleComponent()
 {
-
+    _gameObject = nullptr;
 }
 
-void ModuleComponent::Enable() {
+void ModuleComponent::Update() {}
 
-	active = true;
+void ModuleComponent::Enable() { enabled = true; }
 
+void ModuleComponent::Disable() { enabled = false; }
+
+bool ModuleComponent::IsEnabled()
+{
+    return enabled;
 }
 
-void ModuleComponent::Update() {
-
+ComponentType ModuleComponent::GetType()
+{
+    return type;
 }
 
-void ModuleComponent::Disable() {
-
-	active = false;
+void ModuleComponent::SetGameObject(GameObject* g_gameObject)
+{
+    _gameObject = g_gameObject;
 }
 
-ComponentType ModuleComponent::ReturnType() {
-
-	return type;
-
+GameObject* ModuleComponent::GetGameObject()
+{
+    return _gameObject;
 }
 
-GameObject* ModuleComponent::ReturnGameObject() {
-
-	return owner;
-
+void ModuleComponent::SetResourceUID(uint UID)
+{
+    _resourceUID = UID;
 }

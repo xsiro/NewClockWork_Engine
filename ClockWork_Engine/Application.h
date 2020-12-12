@@ -14,9 +14,34 @@
 #include "ModulePhysics3D.h"
 #include "ModuleGui.h"
 #include "ModuleImporter.h"
+#include "ModuleResources.h"
 #include "FileSys.h"
 
+struct Hardware
+{
+	int cpu_count;
+	int cache;
+	float ram;
+	const char* gpu;
+	const char* gpu_brand;
+	float vram_budget;
+	float vram_usage;
+	float vram_available;
+	float vram_reserved;
 
+	bool RDTSC = false;
+	bool MMX = false;
+	bool SSE = false;
+	bool SSE2 = false;
+	bool SSE3 = false;
+	bool SSE41 = false;
+	bool SSE42 = false;
+	bool AVX = false;
+	bool AVX2 = false;
+	bool AltiVec = false;
+
+	std::string caps;
+};
 
 class Application
 {
@@ -29,8 +54,8 @@ public:
 	ModulePhysics3D* physics;
 	ModuleGui* gui;
 	ModuleImporter* importer;
-	FileSystem* filesys;
-	
+	ModuleResources* res;
+	bool in_game;
 private:
 
 	Timer	ms_timer;
@@ -57,7 +82,11 @@ public:
 	int Available();
 	int Reserved();
 	std::string Caps;
-	
+	float GetFPS();
+	float GetLastDt();
+	int GetFPSMax();
+	void SetFPSMax(int max_fps);
+	Hardware GetHardware();
 
 private:
 
@@ -69,6 +98,7 @@ public:
 	float max_ms;
 	float fps;
 	float dt;
+
 };
 
 extern Application* App;

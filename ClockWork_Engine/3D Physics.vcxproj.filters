@@ -25,6 +25,18 @@
     <Filter Include="Sources\Tools\ImGui\SDL_OpenGL3">
       <UniqueIdentifier>{89de8cfe-9e09-4b1a-b363-3b116c8302b2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\components">
+      <UniqueIdentifier>{63833b01-d401-45b8-ab2b-a9c0f7ed9b25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Resources">
+      <UniqueIdentifier>{477accb0-ada4-4be7-a9c7-ed6659c6bac8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\importers">
+      <UniqueIdentifier>{9a7e6dfa-2a6a-4106-9fb2-0dd199db192d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\GUI">
+      <UniqueIdentifier>{454d3492-f1ee-48fd-b07e-7e174720d52d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Module.h">
@@ -105,23 +117,86 @@
     <ClInclude Include="ModuleImporter.h">
       <Filter>Sources\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="GameObject.h">
+    <ClInclude Include="FileSys.h">
       <Filter>Sources\Modules</Filter>
     </ClInclude>
     <ClInclude Include="ModuleComponent.h">
-      <Filter>Sources\Modules</Filter>
+      <Filter>Sources\components</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleTransform.h">
-      <Filter>Sources\Modules</Filter>
+    <ClInclude Include="GameObject.h">
+      <Filter>Sources\components</Filter>
     </ClInclude>
     <ClInclude Include="ModuleMaterial.h">
-      <Filter>Sources\Modules</Filter>
+      <Filter>Sources\components</Filter>
     </ClInclude>
     <ClInclude Include="ModuleMesh.h">
+      <Filter>Sources\components</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleTransform.h">
+      <Filter>Sources\components</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Sources\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceMat.h">
+      <Filter>Sources\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceMesh.h">
+      <Filter>Sources\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceMod.h">
+      <Filter>Sources\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="ResourceTex.h">
+      <Filter>Sources\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="Importer.h">
+      <Filter>Sources\importers</Filter>
+    </ClInclude>
+    <ClInclude Include="ImporterMat.h">
+      <Filter>Sources\importers</Filter>
+    </ClInclude>
+    <ClInclude Include="ImporterMesh.h">
+      <Filter>Sources\importers</Filter>
+    </ClInclude>
+    <ClInclude Include="ImporterMod.h">
+      <Filter>Sources\importers</Filter>
+    </ClInclude>
+    <ClInclude Include="ModuleResources.h">
       <Filter>Sources\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="FileSys.h">
-      <Filter>Sources\Modules</Filter>
+    <ClInclude Include="ImporterTex.h">
+      <Filter>Sources\importers</Filter>
+    </ClInclude>
+    <ClInclude Include="options.h">
+      <Filter>Sources\importers</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Sources\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="About.h">
+      <Filter>Sources\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Cam.h">
+      <Filter>Sources\components</Filter>
+    </ClInclude>
+    <ClInclude Include="Configuration.h">
+      <Filter>Sources\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Hierarchy.h">
+      <Filter>Sources\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Import.h">
+      <Filter>Sources\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Inspector.h">
+      <Filter>Sources\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Wscene.h">
+      <Filter>Sources\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="Assets.h">
+      <Filter>Sources\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -194,23 +269,77 @@
     <ClCompile Include="ModuleImporter.cpp">
       <Filter>Sources\Modules</Filter>
     </ClCompile>
-    <ClCompile Include="GameObject.cpp">
+    <ClCompile Include="FileSys.cpp">
       <Filter>Sources\Modules</Filter>
     </ClCompile>
     <ClCompile Include="ModuleComponent.cpp">
-      <Filter>Sources\Modules</Filter>
+      <Filter>Sources\components</Filter>
     </ClCompile>
-    <ClCompile Include="ModuleTransform.cpp">
-      <Filter>Sources\Modules</Filter>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Sources\components</Filter>
     </ClCompile>
     <ClCompile Include="ModuleMaterial.cpp">
-      <Filter>Sources\Modules</Filter>
+      <Filter>Sources\components</Filter>
     </ClCompile>
     <ClCompile Include="ModuleMesh.cpp">
+      <Filter>Sources\components</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleTransform.cpp">
+      <Filter>Sources\components</Filter>
+    </ClCompile>
+    <ClCompile Include="Resource.cpp">
+      <Filter>Sources\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceMat.cpp">
+      <Filter>Sources\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceMesh.cpp">
+      <Filter>Sources\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceMod.cpp">
+      <Filter>Sources\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="ResourceTex.cpp">
+      <Filter>Sources\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="ImporterMat.cpp">
+      <Filter>Sources\importers</Filter>
+    </ClCompile>
+    <ClCompile Include="ImporterMesh.cpp">
+      <Filter>Sources\importers</Filter>
+    </ClCompile>
+    <ClCompile Include="ImporterMod.cpp">
+      <Filter>Sources\importers</Filter>
+    </ClCompile>
+    <ClCompile Include="ModuleResources.cpp">
       <Filter>Sources\Modules</Filter>
     </ClCompile>
-    <ClCompile Include="FileSys.cpp">
-      <Filter>Sources\Modules</Filter>
+    <ClCompile Include="ImporterTex.cpp">
+      <Filter>Sources\importers</Filter>
+    </ClCompile>
+    <ClCompile Include="About.cpp">
+      <Filter>Sources\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Cam.cpp">
+      <Filter>Sources\components</Filter>
+    </ClCompile>
+    <ClCompile Include="Configuration.cpp">
+      <Filter>Sources\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Hierarchy.cpp">
+      <Filter>Sources\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Import.cpp">
+      <Filter>Sources\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Inspector.cpp">
+      <Filter>Sources\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Wscene.cpp">
+      <Filter>Sources\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Assets.cpp">
+      <Filter>Sources\GUI</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

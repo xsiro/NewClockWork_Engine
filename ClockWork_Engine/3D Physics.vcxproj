@@ -75,14 +75,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="About.h" />
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Assets.h" />
+    <ClInclude Include="Cam.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="Configuration.h" />
     <ClInclude Include="FileSys.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="gl3w.h" />
     <ClInclude Include="glcorearb.h" />
     <ClInclude Include="glmath.h" />
     <ClInclude Include="Globals.h" />
+    <ClInclude Include="Hierarchy.h" />
+    <ClInclude Include="Import.h" />
+    <ClInclude Include="Importer.h" />
+    <ClInclude Include="ImporterMat.h" />
+    <ClInclude Include="ImporterMesh.h" />
+    <ClInclude Include="ImporterMod.h" />
+    <ClInclude Include="ImporterTex.h" />
+    <ClInclude Include="Inspector.h" />
+    <ClInclude Include="ModuleResources.h" />
+    <ClInclude Include="options.h" />
+    <ClInclude Include="Resource.h" />
     <ClInclude Include="imconfig.h" />
     <ClInclude Include="imgui.h" />
     <ClInclude Include="imgui_impl_opengl3.h" />
@@ -106,21 +121,38 @@
     <ClInclude Include="ModuleTransform.h" />
     <ClInclude Include="ModuleWindow.h" />
     <ClInclude Include="Primitive.h" />
+    <ClInclude Include="ResourceMat.h" />
+    <ClInclude Include="ResourceMesh.h" />
+    <ClInclude Include="ResourceMod.h" />
+    <ClInclude Include="ResourceTex.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="Window.h" />
+    <ClInclude Include="Wscene.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="About.cpp" />
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="Assets.cpp" />
+    <ClCompile Include="Cam.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClCompile Include="Configuration.cpp" />
     <ClCompile Include="FileSys.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="gl3w.c" />
     <ClCompile Include="glmath.cpp" />
+    <ClCompile Include="Hierarchy.cpp" />
     <ClCompile Include="imgui.cpp" />
     <ClCompile Include="imgui_demo.cpp" />
     <ClCompile Include="imgui_draw.cpp" />
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="imgui_impl_sdl.cpp" />
     <ClCompile Include="imgui_widgets.cpp" />
+    <ClCompile Include="Import.cpp" />
+    <ClCompile Include="ImporterMat.cpp" />
+    <ClCompile Include="ImporterMesh.cpp" />
+    <ClCompile Include="ImporterMod.cpp" />
+    <ClCompile Include="ImporterTex.cpp" />
+    <ClCompile Include="Inspector.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -132,12 +164,19 @@
     <ClCompile Include="ModuleMaterial.cpp" />
     <ClCompile Include="ModulePhysics3D.cpp" />
     <ClCompile Include="ModuleRenderer3D.cpp" />
+    <ClCompile Include="ModuleResources.cpp" />
     <ClCompile Include="ModuleSceneIntro.cpp" />
     <ClCompile Include="ModuleTransform.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
     <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="ModuleMesh.cpp" />
+    <ClCompile Include="Resource.cpp" />
+    <ClCompile Include="ResourceMat.cpp" />
+    <ClCompile Include="ResourceMesh.cpp" />
+    <ClCompile Include="ResourceMod.cpp" />
+    <ClCompile Include="ResourceTex.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="Wscene.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

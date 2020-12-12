@@ -120,3 +120,22 @@ GameObject* ModuleSceneIntro::CreateGameObject(GameObject* father)
 
 	return newo;
 }
+
+std::vector<GameObject*> ModuleSceneIntro::GetAllGameObjects()
+{
+	std::vector<GameObject*> gameObjects;
+
+	PreorderGameObjects(root, gameObjects);
+
+	return gameObjects;
+}
+
+void ModuleSceneIntro::PreorderGameObjects(GameObject* gameObject, std::vector<GameObject*>& gameObjects)
+{
+	gameObjects.push_back(gameObject);
+
+	for (size_t i = 0; i < gameObject->GetChildrenAmount(); i++)
+	{
+		PreorderGameObjects(gameObject->GetChildAt(i), gameObjects);
+	}
+}

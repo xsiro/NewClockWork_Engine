@@ -125,17 +125,22 @@ void ModuleWindow::SetFullDesktop(bool state)
 		SDL_SetWindowFullscreen(window, 0);
 }
 
+float ModuleWindow::GetBrightness()
+{
+	return brightness;
+}
+
 void ModuleWindow::SetBright(float bright)
 {
 	SDL_SetWindowBrightness(window, bright);
 }
 
-void ModuleWindow::SetWidth(int width)
+void ModuleWindow::GetSize(int& g_width, int& g_height)
 {
-	SDL_SetWindowSize(window, width, App->gui->height);
+	SDL_GetWindowSize(window, &g_width, &g_height);
 }
 
-void ModuleWindow::SetHeight(int height)
+void ModuleWindow::SetSize(int g_width, int g_height)
 {
-	SDL_SetWindowSize(window, App->gui->width, height);
+	SDL_SetWindowSize(window, g_width, g_height);
 }
