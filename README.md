@@ -14,12 +14,22 @@ ClockWorkEngine is an Engine with these features:
 
 - DRAG & LOAD you can drag the 3D model that you want and ClockWorkEngine will load it (this also works with textures)
 
+- NEW SCENE implemented
+
+- HIERARCHY
+
+- FILESYSTEM and FOLDERS
+
+- MODEL EDITOR inside the scene
+
+
 
 ## Team members
 
 - Daniel Ruiz (xSiro) --> https://github.com/xsiro
 
 - Pol Cortés (PolCorTs) --> https://github.com/PolCorTs
+
 
 ## Controls
 
@@ -30,6 +40,7 @@ ClockWorkEngine is an Engine with these features:
 - A --> Move left
 
 - D --> Move right
+
 
 ## Notes
 
