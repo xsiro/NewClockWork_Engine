@@ -31,6 +31,8 @@ public:
 
 	bool ClearScene();
 
+	bool Save(const char* file_path);
+	bool Load(const char* scene_file);
 
 public:
 	bool show_grid;

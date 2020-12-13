@@ -48,7 +48,7 @@
       <SDLCheck>false</SDLCheck>
       <ExceptionHandling>false</ExceptionHandling>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\druiz\OneDrive\Documentos\GitHub\NewClockWork_Engine\ClockWork_Engine;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -95,6 +95,7 @@
     <ClInclude Include="ImporterMod.h" />
     <ClInclude Include="ImporterTex.h" />
     <ClInclude Include="Inspector.h" />
+    <ClInclude Include="JSON.h" />
     <ClInclude Include="ModuleResources.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="Resource.h" />
@@ -152,6 +153,7 @@
     <ClCompile Include="ImporterMod.cpp" />
     <ClCompile Include="ImporterTex.cpp" />
     <ClCompile Include="Inspector.cpp" />
+    <ClCompile Include="JSON.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="Main.cpp" />

@@ -4,7 +4,9 @@
 #include "ModuleMesh.h"
 #include "FileSys.h"
 #include "GameObject.h"
+#include "JSON.h"
 #include "ModuleTransform.h"
+#include "ImGuizmo/ImGuizmo.h"
 
 ModuleSceneIntro::ModuleSceneIntro(bool start_enabled) : Module(start_enabled), show_grid(true), selected_object(nullptr), root(nullptr)
 {
@@ -96,6 +98,32 @@ bool ModuleSceneIntro::CleanUp()
 	selected_object = nullptr;
 
 	return true;
+}
+
+bool ModuleSceneIntro::Save(const char* file_path)
+{
+	bool ret = true;
+
+	JSON save_file;
+
+	GnJSONArray gameObjects = save_file.AddArray("Game Objects");
+
+	root->Save(gameObjects);
+
+	char* buffer = NULL;
+	uint size = save_file.Save(&buffer);
+
+	FileSys::Save(file_path, buffer, size);
+
+	std::string assets_path = "Assets/";
+	assets_path.append(FileSys::GetFile(file_path));
+
+	FileSys::DuplicateFile(file_path, assets_path.c_str());
+
+	save_file.Release();
+	RELEASE_ARRAY(buffer);
+
+	return ret;
 }
 
 void ModuleSceneIntro::AddGameObject(GameObject* gameObject)

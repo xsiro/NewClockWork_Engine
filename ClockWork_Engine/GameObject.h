@@ -11,7 +11,8 @@ class ModuleComponent;
 class ModuleTransform;
 class GnMesh;
 enum ComponentType;
-
+class JSON;
+class GnJSONArray;
 
 
 class GameObject {
@@ -35,7 +36,9 @@ public:
 	ModuleTransform* GetTransform();
 	AABB GetAABB();
 	bool IsVisible();
-
+	void Save(GnJSONArray& save_array);
+	uint Load(JSON* object);
+	uint LoadNodeData(JSON* object);
 	GameObject* GetParent();
 	void SetParent(GameObject* parent);
 	void Reparent(GameObject* newParent);

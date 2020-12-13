@@ -195,6 +195,9 @@
     <ClInclude Include="Assets.h">
       <Filter>Sources\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="JSON.h">
+      <Filter>Sources\Modules</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ModuleCamera3D.cpp">
@@ -334,6 +337,9 @@
     </ClCompile>
     <ClCompile Include="Assets.cpp">
       <Filter>Sources\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="JSON.cpp">
+      <Filter>Sources\Modules</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

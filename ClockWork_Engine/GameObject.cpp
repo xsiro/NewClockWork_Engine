@@ -6,6 +6,7 @@
 #include "imgui.h"
 #include "Application.h"
 #include "Cam.h"
+#include "JSON.h"
 
 #include "MathGeoLib/include/MathGeoLib.h"
 
@@ -97,7 +98,51 @@ void GameObject::OnEditor()
 	}
 }
 
+void GameObject::Save(GnJSONArray& save_array)
+{
+	JSON save_object;
 
+	save_object.AddInt("UUID", UUID);
+
+	if (_parent != nullptr)
+		save_object.AddInt("Parent UUID", _parent->UUID);
+	else
+		save_object.AddInt("Parent UUID", 0);
+
+	save_object.AddString("Name", name.c_str());
+
+	GnJSONArray componentsSave = save_object.AddArray("Components");
+
+	for (size_t i = 0; i < components.size(); i++)
+	{
+		components[i]->Save(componentsSave);
+	}
+
+	save_array.AddObject(save_object);
+
+	for (size_t i = 0; i < children.size(); i++)
+	{
+		children[i]->Save(save_array);
+	}
+}
+
+uint GameObject::Load(JSON* object)
+{
+	UUID = object->GetInt("UUID");
+	name = object->GetString("Name", "No Name");
+	uint parentUUID = object->GetInt("Parent UUID");
+
+	GnJSONArray componentsArray = object->GetArray("Components");
+
+	for (size_t i = 0; i < componentsArray.Size(); i++)
+	{
+		JSON componentObject = componentsArray.GetObjectAt(i);
+		ModuleComponent* component = AddComponent((ComponentType)componentObject.GetInt("Type"));
+		component->Load(componentObject);
+	}
+
+	return parentUUID;
+}
 
 ModuleComponent* GameObject::GetComponent(ComponentType component)
 {
