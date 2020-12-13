@@ -1,3 +1,6 @@
+#ifndef _IMPORT_H_
+#define _IMPORT_H_
+
 #include "Window.h"
 #include "options.h"
 #include "Resource.h"
@@ -20,3 +23,4 @@ private:
 	ResourceType _currentResourceType;
 };
 
+#endif

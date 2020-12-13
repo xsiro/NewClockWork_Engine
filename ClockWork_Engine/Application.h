@@ -13,9 +13,9 @@
 #include "ModuleSceneIntro.h"
 #include "ModulePhysics3D.h"
 #include "ModuleGui.h"
-#include "ModuleImporter.h"
 #include "ModuleResources.h"
 #include "FileSys.h"
+#include <stack>
 
 struct Hardware
 {
@@ -53,7 +53,6 @@ public:
 	ModuleSceneIntro* scene;
 	ModulePhysics3D* physics;
 	ModuleGui* gui;
-	ModuleImporter* importer;
 	ModuleResources* res;
 	bool in_game;
 private:
@@ -87,6 +86,9 @@ public:
 	int GetFPSMax();
 	void SetFPSMax(int max_fps);
 	Hardware GetHardware();
+	void Save(const char* filePath);
+	void Load(const char* filePath);
+	void AddModuleToTaskStack(Module* callback);
 
 private:
 
@@ -98,7 +100,12 @@ public:
 	float max_ms;
 	float fps;
 	float dt;
+	bool want_to_save;
+	bool want_to_load;
+	std::stack<Module*> endFrameTasks;
 
+	const char* _file_to_load;
+	const char* _file_to_save;
 };
 
 extern Application* App;

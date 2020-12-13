@@ -1,28 +1,31 @@
 #pragma once
 
-#include "Globals.h"
-
 class Application;
 
 
 class Module
 {
-private :
+private:
 	bool enabled;
 
 public:
-	Application* App;
+	const char* name = "No Name Module";
 
-	Module(Application* parent, bool start_enabled = true) : App(parent)
-	{}
+public:
+
+	Module(bool start_enabled = true)
+	{
+		enabled = true;
+	}
 
 	virtual ~Module()
 	{}
 
-	virtual bool Init() 
+	virtual bool Init()
 	{
-		return true; 
+		return true;
 	}
+
 
 	virtual bool Start()
 	{
@@ -44,10 +47,10 @@ public:
 		return UPDATE_CONTINUE;
 	}
 
-	virtual bool CleanUp() 
-	{ 
-		return true; 
+	virtual void OnFrameEnd() {}
+
+	virtual bool CleanUp()
+	{
+		return true;
 	}
-
-
 };

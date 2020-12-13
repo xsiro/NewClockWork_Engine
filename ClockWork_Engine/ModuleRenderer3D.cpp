@@ -3,7 +3,7 @@
 
 #include "GameObject.h"
 #include "ModuleMaterial.h"
-//#include "Camera.h"
+#include "Cam.h"
 
 #include <vector>
 #include "FileSys.h"
@@ -190,10 +190,10 @@ update_status ModuleRenderer3D::PostUpdate(float dt)
 
 	SDL_GL_SwapWindow(App->window->window);
 
-	if (App->scene->selectedGameObject != nullptr && App->scene->selectedGameObject->to_delete)
+	if (App->scene->selected_object != nullptr && App->scene->selected_object->to_delete)
 	{
-		App->scene->DeleteGameObject(App->scene->selectedGameObject);
-		App->scene->selectedGameObject = nullptr;
+		App->scene->DeleteGameObject(App->scene->selected_object);
+		App->scene->selected_object = nullptr;
 	}
 
 	return UPDATE_CONTINUE;

@@ -18,7 +18,7 @@ ModuleTransform::ModuleTransform() : ModuleComponent()
 	_parentGlobalTransform = float4x4::identity;
 }
 
-ModuleTransform::ModuleTransform(float3 position, Quat rotation, float3 scale) : Component()
+ModuleTransform::ModuleTransform(float3 position, Quat rotation, float3 scale) : ModuleComponent()
 {
 	type = ComponentType::TRANSFORM;
 
@@ -35,7 +35,7 @@ ModuleTransform::ModuleTransform(float3 position, Quat rotation, float3 scale) :
 
 ModuleTransform::~ModuleTransform() {}
 
-void ModuleTransform::ModuleTransform() {}
+
 
 void ModuleTransform::OnEditor()
 {

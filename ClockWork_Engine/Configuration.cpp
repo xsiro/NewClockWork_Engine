@@ -234,8 +234,8 @@ void Configuration::Draw()
 
 			ImGui::Spacing();
 
-			ImGui::Text("Normalized Mouse X: %.2f", App->gui->mouseScenePosition.x / App->editor->image_size.x);
-			ImGui::Text("Normalized Mouse Y: %.2f", App->gui->mouseScenePosition.y / App->editor->image_size.y);
+			ImGui::Text("Normalized Mouse X: %.2f", App->gui->mouseScenePosition.x / App->gui->image_size.x);
+			ImGui::Text("Normalized Mouse Y: %.2f", App->gui->mouseScenePosition.y / App->gui->image_size.y);
 
 			ImGui::Spacing();
 

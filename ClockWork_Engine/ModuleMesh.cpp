@@ -38,10 +38,10 @@ void GnMesh::SetResourceUID(uint UID)
 	//App->resources->ReleaseResource(_resourceUID);
 }
 
-Resource* GnMesh::GetResource(ResourceType type)
-{
-	return _resource;
-}
+//Resource* GnMesh::GetResource(ResourceType type)
+//{
+//	return _resource;
+//}
 
 void GnMesh::GenerateAABB()
 {
@@ -114,6 +114,11 @@ void GnMesh::Render()
 
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+}
+
+Resource* GnMesh::GetResource(ResourceType type)
+{
+	return _resource;
 }
 
 void GnMesh::OnEditor()

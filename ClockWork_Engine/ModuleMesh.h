@@ -4,6 +4,7 @@
 #include <vector>;
 #include "ModuleMaterial.h"
 
+
 #include "MathGeoLib/include/MathGeoLib.h"
 
 class ResourceMesh;
@@ -18,7 +19,7 @@ public:
 	virtual ~GnMesh();
 	void SetResourceUID(uint UID) override;
 	Resource* GetResource(ResourceType type) override;
-
+	//Resource* GetResource(ResourceType type) override;
 	void GenerateAABB();
 	AABB GetAABB();
 

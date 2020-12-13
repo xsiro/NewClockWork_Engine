@@ -114,9 +114,6 @@
     <ClInclude Include="ModulePhysics3D.h">
       <Filter>Sources\Modules</Filter>
     </ClInclude>
-    <ClInclude Include="ModuleImporter.h">
-      <Filter>Sources\Modules</Filter>
-    </ClInclude>
     <ClInclude Include="FileSys.h">
       <Filter>Sources\Modules</Filter>
     </ClInclude>
@@ -264,9 +261,6 @@
       <Filter>Sources\Modules</Filter>
     </ClCompile>
     <ClCompile Include="ModulePhysics3D.cpp">
-      <Filter>Sources\Modules</Filter>
-    </ClCompile>
-    <ClCompile Include="ModuleImporter.cpp">
       <Filter>Sources\Modules</Filter>
     </ClCompile>
     <ClCompile Include="FileSys.cpp">

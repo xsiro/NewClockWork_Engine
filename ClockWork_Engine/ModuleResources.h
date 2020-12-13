@@ -27,7 +27,7 @@ public:
 	bool CleanUp() override;
 	void OnEditor();
 	void LoadEngineAssets();
-	//void OnFrameEnd() override;
+	void OnFrameEnd() override;
 
 	bool MetaUpToDate(const char* assets_file, const char* meta_file);
 	int GetUIDFromMeta(const char* meta_file);

@@ -37,6 +37,8 @@ public:
 	bool resizable;
 	bool borderless;
 	float brightness;
+	int width;
+	int height;
 	//The surface contained by the window
 	SDL_Surface* screen_surface;
 };

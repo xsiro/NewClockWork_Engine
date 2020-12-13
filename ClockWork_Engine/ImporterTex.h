@@ -1,4 +1,5 @@
-
+#ifndef _IMPORTER_TEX_H_
+#define _IMPORTER_TEX_H_
 #include "Globals.h"
 
 struct TextureImportingOptions;
@@ -19,4 +20,4 @@ namespace ImporterTex
 	void ApplyImportingOptions(TextureImportingOptions importingOptions);
 }
 
-
+#endif

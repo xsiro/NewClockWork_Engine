@@ -5,7 +5,7 @@
 #include "FileSys.h"
 #include "Assimp/include/material.h"
 
-void ImporterMat::Import(const aiMaterial* aimaterial, ResourceMaterial* material)
+void ImporterMat::Import(const aiMaterial* aimaterial, ResourceMat* material)
 {
 	Timer timer;
 	timer.Start();

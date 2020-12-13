@@ -1,5 +1,6 @@
-//#ifndef __TRANSFORM_H__
-//#define __TRANSFORM_H__
+#ifndef __MODULE_TRANSFORM_H__
+#define __MODULE_TRANSFORM_H__
+
 
 #include "ModuleComponent.h"
 #include "MathGeoLib/include/MathGeoLib.h"
@@ -56,4 +57,4 @@ private:
 	float3 _eulerRotation;
 };
 
-//#endif //__TRANSFORM_H__
+#endif

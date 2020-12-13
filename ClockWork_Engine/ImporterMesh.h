@@ -1,3 +1,5 @@
+#ifndef _IMPORTER_MESH_H_
+#define _IMPORTER_MESH_H_
 
 #include "Globals.h"
 
@@ -15,4 +17,4 @@ namespace ImporterMesh
 	bool Load(char* fileBuffer, ResourceMesh* mesh, uint size);
 }
 
-
+#endif

@@ -1,4 +1,5 @@
-
+#ifndef _IMPORTER_MOD_H_
+#define _IMPORTER_MOD_H_
 
 #include "Globals.h"
 #include "options.h"
@@ -40,4 +41,4 @@ namespace ImporterMod
 	void ConvertToDesiredAxis(aiNode* node, ModelNode& modelNode);
 }
 
-
+#endif

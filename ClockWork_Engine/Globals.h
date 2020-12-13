@@ -58,3 +58,4 @@ enum update_status
 	       x = nullptr;\
 		 }\
 	 }
+#define SCREEN_SIZE 1

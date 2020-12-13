@@ -13,7 +13,7 @@
 #include "ResourceMat.h"
 #include "ResourceTex.h"
 
-//#include "WindowImport.h"
+#include "Import.h"
 #include <algorithm>
 
 #include "MathGeoLib/include/MathGeoLib.h"
@@ -30,7 +30,7 @@ bool ModuleResources::Init()
 	bool ret = true;
 
 	ImporterMesh::Init();
-	TextureImporter::Init();
+	ImporterTex::Init();
 
 	//std::vector<std::string> files;
 	//std::vector<std::string> dirs;
@@ -152,64 +152,8 @@ void ModuleResources::OnFrameEnd()
 	}
 }
 
-bool ModuleResources::MetaUpToDate(const char* assets_file, const char* meta_file)
-{
-	bool ret = true;
 
-	char* buffer = nullptr;
-	uint size = FileSys::Load(meta_file, &buffer);
-	GnJSONObj meta(buffer);
 
-	uint UID = meta.GetInt("UID");
-	int lastModifiedMeta = meta.GetInt("lastModified");
-	uint lastModified = FileSystem::GetLastModTime(assets_file);
-
-	if (lastModifiedMeta == lastModified)
-	{
-		std::string library_path = meta.GetString("Library path", "NoPath");
-
-		if (library_path == "NoPath")
-			library_path = Find(UID);
-
-		//check for the file itself to exist
-		if (!FileSys::Exists(library_path.c_str()))
-		{
-			ret = false;
-		}
-		//check its internal resources
-		else if (GetTypeFromPath(assets_file) == ResourceType::RESOURCE_MODEL)
-		{
-			ret = ImporterMod::InternalResourcesExist(meta_file);
-		}
-
-		resources_data[UID].assetsFile = assets_file;
-		resources_data[UID].libraryFile = library_path;
-		resources_data[UID].type = GetTypeFromPath(assets_file);
-	}
-	else
-	{
-		ret = false;
-	}
-
-	meta.Release();
-	RELEASE_ARRAY(buffer);
-
-	return ret;
-}
-
-int ModuleResources::GetUIDFromMeta(const char* meta_file)
-{
-	char* buffer = nullptr;
-	uint size = FileSystem::Load(meta_file, &buffer);
-	GnJSONObj meta(buffer);
-
-	int UID = meta.GetInt("UID", -1);
-
-	meta.Release();
-	RELEASE_ARRAY(buffer);
-
-	return UID;
-}
 
 int ModuleResources::Find(const char* assets_file)
 {
@@ -220,13 +164,13 @@ int ModuleResources::Find(const char* assets_file)
 
 	//First we loop through all loaded resources
 	for (resource_it; resource_it != resources.end(); resource_it++) {
-		if (FileSystem::ToLower(resource_it->second->assetsFile.c_str()) == FileSystem::ToLower(assets_file))
+		if (FileSys::ToLower(resource_it->second->assetsFile.c_str()) == FileSys::ToLower(assets_file))
 			return resource_it->first;
 	}
 
 	//If not found we loop through all not loaded but known resources
 	for (resources_data_it; resources_data_it != resources_data.end(); resources_data_it++) {
-		if (FileSystem::ToLower(resources_data_it->second.assetsFile.c_str()) == FileSystem::ToLower(assets_file))
+		if (FileSys::ToLower(resources_data_it->second.assetsFile.c_str()) == FileSys::ToLower(assets_file))
 			return resources_data_it->first;
 	}
 
@@ -246,7 +190,7 @@ const char* ModuleResources::Find(uint UID)
 		std::string file = directories[i];
 		file += std::to_string(UID);
 		file += extensions[i];
-		if (FileSystem::Exists(file.c_str()))
+		if (FileSys::Exists(file.c_str()))
 		{
 			char* final_file = new char[256];
 			sprintf_s(final_file, 256, file.c_str());
@@ -302,15 +246,15 @@ uint ModuleResources::ImportFile(const char* assets_file)
 	uint ret = 0;
 
 	char* fileBuffer;
-	uint size = FileSystem::Load(assets_file, &fileBuffer);
+	uint size = FileSys::Load(assets_file, &fileBuffer);
 
 	switch (type)
 	{
 	case RESOURCE_MODEL:
-		ModelImporter::Import(fileBuffer, (ResourceModel*)resource, size);
+		ImporterMod::Import(fileBuffer, (ResourceMod*)resource, size);
 		break;
 	case RESOURCE_TEXTURE:
-		TextureImporter::Import(fileBuffer, (ResourceTexture*)resource, size);
+		ImporterTex::Import(fileBuffer, (ResourceTex*)resource, size);
 		break;
 	case RESOURCE_SCENE:
 		break;
@@ -340,10 +284,10 @@ uint ModuleResources::ImportInternalResource(const char* path, const void* data,
 	switch (type)
 	{
 	case RESOURCE_MESH:
-		MeshImporter::Import((aiMesh*)data, (ResourceMesh*)resource);
+		ImporterMesh::Import((aiMesh*)data, (ResourceMesh*)resource);
 		break;
 	case RESOURCE_MATERIAL:
-		MaterialImporter::Import((aiMaterial*)data, (ResourceMaterial*)resource);
+		ImporterMat::Import((aiMaterial*)data, (ResourceMat*)resource);
 		break;
 	default:
 		break;
@@ -368,7 +312,7 @@ uint ModuleResources::ReimportFile(const char* assets_file)
 	Resource* resource = CreateResource(assets_file, type, ret);
 
 	char* fileBuffer;
-	uint size = FileSystem::Load(assets_file, &fileBuffer);
+	uint size = FileSys::Load(assets_file, &fileBuffer);
 
 	if (size <= 0)
 	{
@@ -379,13 +323,13 @@ uint ModuleResources::ReimportFile(const char* assets_file)
 	switch (type)
 	{
 	case ResourceType::RESOURCE_MODEL:
-		ModelImporter::ReimportFile(fileBuffer, (ResourceModel*)resource, size);
+		ImporterMod::ReimportFile(fileBuffer, (ResourceMod*)resource, size);
 		break;
 	case ResourceType::RESOURCE_TEXTURE:
-		if (FileSystem::Exists(resource->libraryFile.c_str()))
-			FileSystem::Delete(resource->libraryFile.c_str());
+		if (FileSys::Exists(resource->libraryFile.c_str()))
+			FileSys::Delete(resource->libraryFile.c_str());
 
-		TextureImporter::Import(fileBuffer, (ResourceTexture*)resource, size);
+		ImporterTex::Import(fileBuffer, (ResourceTex*)resource, size);
 		break;
 	default:
 		break;
@@ -421,15 +365,15 @@ void ModuleResources::DragDropFile(const char* path)
 {
 	std::string file_to_import = path;
 
-	if (!FileSystem::Exists(path))
+	if (!FileSys::Exists(path))
 	{
 		file_to_import = GenerateAssetsPath(path);
-		FileSystem::DuplicateFile(path, file_to_import.c_str());
+		FileSys::DuplicateFile(path, file_to_import.c_str());
 	}
 
 	char* final_path = new char[sizeof(char) * file_to_import.size()];
 	strcpy(final_path, file_to_import.c_str());
-	WindowImport* import_window = dynamic_cast<WindowImport*>(App->editor->windows[WindowType::IMPORT_WINDOW]);
+	Import* import_window = dynamic_cast<Import*>(App->gui->windows[WindowType::IMPORT_WINDOW]);
 	import_window->Enable(final_path, GetTypeFromPath(path));
 }
 
@@ -451,13 +395,13 @@ bool ModuleResources::DeleteAsset(const char* assets_path)
 {
 	bool ret = true;
 
-	FileSystem::Delete(assets_path);
+	FileSys::Delete(assets_path);
 
 	std::string meta_file = assets_path;
 	meta_file.append(".meta");
 
-	if (FileSystem::Exists(meta_file.c_str()))
-		FileSystem::Delete(meta_file.c_str());
+	if (FileSys::Exists(meta_file.c_str()))
+		FileSys::Delete(meta_file.c_str());
 
 	return ret;
 }
@@ -478,7 +422,7 @@ bool ModuleResources::DeleteResource(uint UID)
 	}
 
 	ReleaseResource(UID);
-	FileSystem::Delete(resources_data[UID].libraryFile.c_str());
+	FileSys::Delete(resources_data[UID].libraryFile.c_str());
 	ReleaseResourceData(UID);
 
 	return ret;
@@ -493,7 +437,7 @@ bool ModuleResources::DeleteInternalResources(uint UID)
 	{
 		std::vector<uint> meshes;
 		std::vector<uint> materials;
-		ModelImporter::ExtractInternalResources(resources_data[UID].libraryFile.c_str(), meshes, materials);
+		ImporterMod::ExtractInternalResources(resources_data[UID].libraryFile.c_str(), meshes, materials);
 
 		for (size_t i = 0; i < meshes.size(); i++)
 		{
@@ -514,7 +458,7 @@ bool ModuleResources::DeleteInternalResource(uint UID)
 	bool ret = true;
 
 	std::string library_path = Find(UID);
-	ret = FileSystem::Delete(library_path.c_str());
+	ret = FileSys::Delete(library_path.c_str());
 
 	ReleaseResource(UID);
 
@@ -527,28 +471,28 @@ Resource* ModuleResources::LoadResource(uint UID, ResourceType type)
 	bool ret = true;
 
 	char* buffer = nullptr;
-	uint size = FileSystem::Load(resource->libraryFile.c_str(), &buffer);
+	uint size = FileSys::Load(resource->libraryFile.c_str(), &buffer);
 
 	if (size >= 0)
 	{
 		switch (resource->GetType())
 		{
 		case RESOURCE_MODEL:
-			if (ModelImporter::InternalResourcesExist(resource->libraryFile.c_str()))
-				ret = ModelImporter::Load(buffer, (ResourceModel*)resource, size);
+			if (ImporterMod::InternalResourcesExist(resource->libraryFile.c_str()))
+				ret = ImporterMod::Load(buffer, (ResourceMod*)resource, size);
 			else {
 				ReimportFile(resources_data[UID].assetsFile.c_str());
-				ret = ModelImporter::Load(buffer, (ResourceModel*)resource, size);
+				ret = ImporterMod::Load(buffer, (ResourceMod*)resource, size);
 			}
 			break;
 		case RESOURCE_MESH:
-			ret = MeshImporter::Load(buffer, (ResourceMesh*)resource, size);
+			ret = ImporterMesh::Load(buffer, (ResourceMesh*)resource, size);
 			break;
 		case RESOURCE_MATERIAL:
-			ret = MaterialImporter::Load(buffer, (ResourceMaterial*)resource, size);
+			ret = ImporterMat::Load(buffer, (ResourceMat*)resource, size);
 			break;
 		case RESOURCE_TEXTURE:
-			ret = TextureImporter::Load(buffer, (ResourceTexture*)resource, size);
+			ret = ImporterTex::Load(buffer, (ResourceTex*)resource, size);
 			LoadMetaFile(resource);
 			break;
 		case RESOURCE_SCENE:
@@ -586,7 +530,7 @@ void ModuleResources::UnloadResource(Resource* resource)
 	case ResourceType::RESOURCE_MATERIAL:
 		break;
 	case ResourceType::RESOURCE_TEXTURE:
-		TextureImporter::UnloadTexture(((ResourceTexture*)resource)->GetID());
+		ImporterTex::UnloadTexture(((ResourceTex*)resource)->GetID());
 		break;
 	default:
 		break;
@@ -608,16 +552,16 @@ Resource* ModuleResources::CreateResource(const char* assetsPath, ResourceType t
 	switch (type)
 	{
 	case RESOURCE_MODEL:
-		resource = new ResourceModel(UID);
+		resource = new ResourceMod(UID);
 		break;
 	case RESOURCE_MESH:
 		resource = new ResourceMesh(UID);
 		break;
 	case RESOURCE_MATERIAL:
-		resource = new ResourceMaterial(UID);
+		resource = new ResourceMat(UID);
 		break;
 	case RESOURCE_TEXTURE:
-		resource = new ResourceTexture(UID);
+		resource = new ResourceTex(UID);
 		break;
 	case RESOURCE_SCENE:
 		break;
@@ -630,8 +574,8 @@ Resource* ModuleResources::CreateResource(const char* assetsPath, ResourceType t
 	if (resource != nullptr)
 	{
 		resources[UID] = resource;
-		resources[UID]->name = FileSystem::GetFileName(assetsPath);
-		resource->assetsFile = FileSystem::ToLower(assetsPath);
+		resources[UID]->name = FileSys::GetFileName(assetsPath);
+		resource->assetsFile = FileSys::ToLower(assetsPath);
 		resource->libraryFile = GenerateLibraryPath(resource);
 
 		resources_data[UID].name = resources[UID]->name;
@@ -650,16 +594,16 @@ Resource* ModuleResources::CreateResource(uint UID, ResourceType type, std::stri
 	switch (type)
 	{
 	case RESOURCE_MODEL:
-		resource = new ResourceModel(UID);
+		resource = new ResourceMod(UID);
 		break;
 	case RESOURCE_MESH:
 		resource = new ResourceMesh(UID);
 		break;
 	case RESOURCE_MATERIAL:
-		resource = new ResourceMaterial(UID);
+		resource = new ResourceMat(UID);
 		break;
 	case RESOURCE_TEXTURE:
-		resource = new ResourceTexture(UID);
+		resource = new ResourceTex(UID);
 		break;
 	case RESOURCE_SCENE:
 		break;
@@ -677,7 +621,7 @@ Resource* ModuleResources::CreateResource(uint UID, ResourceType type, std::stri
 			resource->assetsFile = resources_data[UID].assetsFile;
 
 		resource->libraryFile = GenerateLibraryPath(resource);
-		resource->name = FileSystem::GetFileName(resource->assetsFile.c_str());
+		resource->name = FileSys::GetFileName(resource->assetsFile.c_str());
 
 		resources[UID] = resource;
 	}
@@ -720,14 +664,14 @@ GameObject* ModuleResources::RequestGameObject(const char* assets_file)
 {
 	std::string meta_file = assets_file;
 	meta_file.append(".meta");
-	ResourceModel* model = (ResourceModel*)RequestResource(GetUIDFromMeta(meta_file.c_str()));
+	ResourceMod* model = (ResourceMod*)RequestResource(GetUIDFromMeta(meta_file.c_str()));
 
 	if (model == nullptr)
 	{
-		model = (ResourceModel*)RequestResource(ReimportFile(assets_file));
+		model = (ResourceMod*)RequestResource(ReimportFile(assets_file));
 	}
 
-	return ModelImporter::ConvertToGameObject(model);
+	return ImporterMod::ConvertToGameObject(model);
 }
 
 void ModuleResources::ReleaseResource(uint UID)
@@ -757,16 +701,16 @@ bool ModuleResources::SaveResource(Resource* resource)
 	switch (resource->GetType())
 	{
 	case RESOURCE_MODEL:
-		size = ModelImporter::Save((ResourceModel*)resource, &buffer);
+		size = ImporterMod::Save((ResourceMod*)resource, &buffer);
 		break;
 	case RESOURCE_MESH:
-		size = MeshImporter::Save((ResourceMesh*)resource, &buffer);
+		size = ImporterMesh::Save((ResourceMesh*)resource, &buffer);
 		break;
 	case RESOURCE_MATERIAL:
-		size = MaterialImporter::Save((ResourceMaterial*)resource, &buffer);
+		size = ImporterMat::Save((ResourceMat*)resource, &buffer);
 		break;
 	case RESOURCE_TEXTURE:
-		size = TextureImporter::Save((ResourceTexture*)resource, &buffer);
+		size = ImporterTex::Save((ResourceTex*)resource, &buffer);
 		break;
 	case RESOURCE_SCENE:
 		break;
@@ -776,7 +720,7 @@ bool ModuleResources::SaveResource(Resource* resource)
 
 	if (size > 0)
 	{
-		FileSystem::Save(resource->libraryFile.c_str(), buffer, size);
+		FileSys::Save(resource->libraryFile.c_str(), buffer, size);
 		RELEASE_ARRAY(buffer);
 	}
 
@@ -786,46 +730,10 @@ bool ModuleResources::SaveResource(Resource* resource)
 	return ret;
 }
 
-bool ModuleResources::SaveMetaFile(Resource* resource)
-{
-	GnJSONObj base_object;
-	resource->SaveMeta(base_object, FileSystem::GetLastModTime(resource->assetsFile.c_str()));
-
-	char* meta_buffer = NULL;
-	uint meta_size = base_object.Save(&meta_buffer);
-
-	std::string meta_file_name = resource->assetsFile + ".meta";
-	FileSystem::Save(meta_file_name.c_str(), meta_buffer, meta_size);
-
-	base_object.Release();
-	RELEASE_ARRAY(meta_buffer);
-
-	return true;
-}
-
-bool ModuleResources::LoadMetaFile(Resource* resource)
-{
-	bool ret = true;
-
-	std::string meta_file = resource->assetsFile;
-	meta_file.append(".meta");
-
-	char* buffer = nullptr;
-	FileSystem::Load(meta_file.c_str(), &buffer);
-
-	GnJSONObj meta_data(buffer);
-
-	resource->Load(meta_data);
-
-	meta_data.Release();
-	RELEASE_ARRAY(buffer);
-
-	return ret;
-}
 
 ResourceType ModuleResources::GetTypeFromPath(const char* path)
 {
-	std::string extension = FileSystem::GetFileFormat(path);
+	std::string extension = FileSys::GetFileFormat(path);
 
 	if (extension == ".fbx" || extension == ".model")
 		return ResourceType::RESOURCE_MODEL;
@@ -924,7 +832,7 @@ std::string ModuleResources::GetLibraryFolder(const char* file_in_assets)
 const char* ModuleResources::GenerateAssetsPath(const char* path)
 {
 	ResourceType type = GetTypeFromPath(path);
-	std::string file = FileSystem::GetFile(path);
+	std::string file = FileSys::GetFile(path);
 
 	char* library_path = new char[128];
 
@@ -971,7 +879,7 @@ void ModuleResources::CheckAssetsRecursive(const char* directory)
 	std::string dir((directory) ? directory : "");
 	dir += "/";
 
-	FileSystem::DiscoverFiles(dir.c_str(), files, dirs);
+	FileSys::DiscoverFiles(dir.c_str(), files, dirs);
 
 	for (std::vector<std::string>::const_iterator it = dirs.begin(); it != dirs.end(); ++it)
 	{
@@ -992,7 +900,7 @@ void ModuleResources::CheckAssetsRecursive(const char* directory)
 		std::string meta = file;
 		meta.append(".meta");
 
-		if (FileSystem::Exists(meta.c_str()))
+		if (FileSys::Exists(meta.c_str()))
 		{
 			if (!MetaUpToDate(file.c_str(), meta.c_str()))
 			{

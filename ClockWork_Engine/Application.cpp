@@ -11,7 +11,7 @@ Application::Application()
 	renderer3D = new ModuleRenderer3D(this);
 	camera = new ModuleCamera3D(this);
 	physics = new ModulePhysics3D(this);
-	importer = new ModuleImporter(this);
+
 	res = new ModuleResources(this);
 	
 
@@ -29,7 +29,7 @@ Application::Application()
 	AddModule(gui);
 	AddModule(physics);
 	
-	AddModule(importer);
+	
 	
 	// Scenes
 	AddModule(scene);
@@ -313,4 +313,15 @@ Hardware Application::GetHardware()
 	specs.gpu_brand = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
 
 	return specs;
+}
+
+void Application::AddModuleToTaskStack(Module* callback)
+{
+	endFrameTasks.push(callback);
+}
+
+void Application::Load(const char* filePath)
+{
+	want_to_load = true;
+	_file_to_load = filePath;
 }

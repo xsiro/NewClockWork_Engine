@@ -1,38 +1,54 @@
 #pragma once
 #include "Module.h"
 #include "Globals.h"
-#include "glmath.h"
+#include "MathGeoLib/include/MathGeoLib.h"
+
+class Cam;
+class GameObject;
+enum FixedFOV;
 
 class ModuleCamera3D : public Module
 {
 public:
-	ModuleCamera3D(Application* app, bool start_enabled = true);
+	ModuleCamera3D(bool start_enabled = true);
 	~ModuleCamera3D();
 
+	bool Init();
 	bool Start();
 	update_status Update(float dt);
 	bool CleanUp();
 
-	void Look(const vec3 &Position, const vec3 &Reference, bool RotateAroundReference = false);
-	void LookAt(const vec3 &Spot);
-	void Move(const vec3 &Movement);
+	void OnResize(int width, int height);
+
+	
+
+	void Look(float3& position);
+	void LookAt(const float3& Spot);
+	Camera* GetCamera();
 	float* GetViewMatrix();
-	void SetBackgroundColor(float r, float g, float b, float w);
+	float4x4 GetViewMatrixM();
+	float* GetProjectionMatrix();
+	float4x4 GetProjectionMatrixM();
+	float3 GetPosition();
+	GameObject* PickGameObject();
+
 	FixedFOV GetFixedFOV();
 	void SetFixedFOV(FixedFOV fixedFOV);
 	float GetVerticalFieldOfView();
 	float GetHorizontalFieldOfView();
 	void SetVerticalFieldOfView(float verticalFOV, int screen_width, int screen_height);
 	void SetHorizontalFieldOfView(float horizontalFOV, int screen_width, int screen_height);
-	void OnResize(int width, int height);
-private:
 
-	void CalculateViewMatrix();
+	void Reset();
+	void SetBackgroundColor(float r, float g, float b, float w);
+
+private:
+	void Move(const float3& Movement);
+	void Orbit(float dt);
 
 public:
-	Camera* _camera;
 	Color background;
-	vec3 X, Y, Z, Position, Reference;
+
 	float move_speed;
 	float drag_speed;
 	float orbit_speed;
@@ -40,6 +56,9 @@ public:
 	float sensitivity;
 
 private:
-
-	mat4x4 ViewMatrix, ViewMatrixInverse;
+	//mat4x4 ViewMatrix, ViewMatrixInverse;
+	float3 X, Y, Z;
+	Camera* _camera;
+	float3 _position;
+	float3 _reference;
 };

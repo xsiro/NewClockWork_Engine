@@ -5,6 +5,7 @@
 #include "ModuleMaterial.h"
 #include "imgui.h"
 #include "Application.h"
+#include "Cam.h"
 
 #include "MathGeoLib/include/MathGeoLib.h"
 

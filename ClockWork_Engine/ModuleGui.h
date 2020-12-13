@@ -1,133 +1,94 @@
-#ifndef __ModuleGui_H__
-#define __ModuleGui_H__
+#ifndef _MODULE_GUI_H_
+#define _MODULE_GUI_H_
 
 #include "Module.h"
-#include <list>
-#include <string>
-#include <vector>
+#include "Globals.h"
+
 #include "imgui.h"
-#include "glmath.h"
-#include "ModuleTransform.h"
+#include "Window.h"
 
-#include "SDL/include/SDL_rect.h"
-#include "SDL/include/SDL_video.h"
+#include <vector>
+#include <string>
 
-#define CURSOR_WIDTH 2
-#define MAX_LOGS 30
+typedef int GLint;
 
-struct SDL_Texture;
-struct _TTF_Font;
-struct SDL_Rect;
-struct SDL_Color; 
-
-enum UIELEMENT_TYPES
-{
-	BUTTON,
-	CHECKBOX,
-	INPUTTEXT,
-	LABEL,
-	IMAGE,
-	BOX
+struct log_message {
+	std::string log_text;
+	int warning_level;
 };
 
-// ---------------------------------------------------
 class ModuleGui : public Module
 {
 public:
+	ModuleGui(bool start_enabled = true);
+	~ModuleGui();
 
-	ModuleGui(Application* app, bool start_enabled = true);
-
-	// Destructor
-	virtual ~ModuleGui();
-
-	// Called when before render is available
-	bool Awake();
-
-	// Call before first frame
 	bool Init();
-
-	// Called before all Updates
-	update_status PreUpdate(float dt);
-
-	// Called every frame
+	
 	update_status Update(float dt);
-
-	// Called after all Updates
-	update_status PostUpdate(float dt);
-
-	// Called before quitting
+	update_status Draw();
 	bool CleanUp();
-	
-	update_status Dock(bool* p_open);
-	
-	
+
+	bool IsSceneFocused();
+	bool MouseOnScene();
+	void AddConsoleLog(const char* log, int warning_level);
+
+	void OnResize(ImVec2 window_size);
+	void LoadFile(const char* filter_extension, const char* from_dir);
+	void SaveFile(const char* filter_extension, const char* from_dir);
+	void DrawDirectoryRecursive(const char* directory, const char* filter_extension);
+
+private:
+	//Dock Space
+	update_status ShowDockSpace(bool* p_open);
+	bool CreateMainMenuBar();
+
+	void ShowGameButtons();
+
+	//Windows
+	void ShowPreferencesWindow();
+
+	void ChangeTheme(std::string theme);
 
 public:
-
-	//our state
-	bool show_demo_window = false;
-	bool mainwindow;
-	bool viewconfig;
-	bool viewconsole;
-	bool inspector;
-	bool hierarchy;
-	bool depthtest;
-	bool cullface;
-	bool lighting;
-	bool polygonssmooth;
-	bool material;
-	bool texture2D;
-	bool cubemap;
-	bool checker;
-	bool colormaterial;
-	bool console = false;
-	bool about;
-	bool wireframe;
-	bool cube;
-	bool pyramid;
-	bool cylinder;
-	bool sphere;
-	bool showmaterial;
-	bool show_another_window = false;
-	void RequestBrowser(const char*);
-	void ClearLog();
-	void AddLogText(std::string incoming_text);
-	void ConsoleLog(char* log);
-	void Draw();
-	void Hierarchy();
-	bool show_configuration_window;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	void OnResize(ImVec2 window_size);
-
-	int fps;
-	int height;
-	int width;
-	bool fullscreen;
-	bool resizable;
-	bool borderless;
-	bool fulldesktop;
-	bool vertexlines;
-	bool facelines;
-	bool check;
-	float brightness;
-	const char* GetName() const;
-	const char* name;
-	bool scroll;
-	bool scene_window_focused;
-
-	SDL_GLContext gl_context; 
-	//ImGuiIO* io = nullptr;
-	std::vector<float> fps_log;
-	std::vector<float> ms_log;
-	bool* dockingwindow;
-	std::vector<std::string> log_record;
-	std::vector<char*> logs;
-	GameObject* selected;
-	char nam[128];
-	ModuleTransform* trans;
 	ImVec2 image_size;
 	ImVec2 sceneWindowOrigin;
 	ImVec2 mouseScenePosition;
+	bool scene_window_focused;
+	Window* windows[MAX_WINDOWS];
+
+private:
+
+	bool show_project_window;
+	bool show_console_window;
+
+	//edit subwindows
+	bool show_preferences_window;
+	bool show_game_buttons;
+
+	//menus
+	bool* open_dockspace;
+
+	int current_theme;
+
+	std::vector<log_message> console_log;
+
+	enum
+	{
+		closed,
+		opened,
+		ready_to_close
+	} file_dialog = closed;
+
+	enum class SceneOperation
+	{
+		SAVE,
+		LOAD,
+		NONE
+	}scene_operation = SceneOperation::NONE;
+
+	bool in_modal = false;
+	char selected_file[256];
 };
 
-#endif // __ModuleGui_H__
+#endif

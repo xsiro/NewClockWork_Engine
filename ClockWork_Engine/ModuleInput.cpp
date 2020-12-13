@@ -1,14 +1,13 @@
 #include "Globals.h"
 #include "Application.h"
 #include "ModuleInput.h"
-#include "ModuleImporter.h"
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl3.h"
 
 #define MAX_KEYS 300
 
-ModuleInput::ModuleInput(Application* app, bool start_enabled) : Module(app, start_enabled)
+ModuleInput::ModuleInput(Application* app, bool start_enabled) : Module(start_enabled)
 {
 	keyboard = new KEY_STATE[MAX_KEYS];
 	memset(keyboard, KEY_IDLE, sizeof(KEY_STATE) * MAX_KEYS);
@@ -115,7 +114,7 @@ update_status ModuleInput::PreUpdate(float dt)
 			{
 				dropped_file = e.drop.file;
 				std::string format(e.drop.file);
-				App->filesys->LoadFile(dropped_file);
+				App->res->DragDropFile(dropped_file);
 				SDL_free(dropped_file);
 			}
 			break;

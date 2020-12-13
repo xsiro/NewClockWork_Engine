@@ -3,7 +3,7 @@
 #include <string>
 
 class GameObject;
-class ResourceComp;
+class Resource;
 enum ResourceType;
 
 enum ComponentType {
@@ -32,7 +32,7 @@ public:
 	void SetGameObject(GameObject* gameObject);
 	GameObject* GetGameObject();
 	virtual void SetResourceUID(uint UID);
-	virtual ResourceComp* GetResource(ResourceType type) { return nullptr; };
+	virtual Resource* GetResource(ResourceType type) { return nullptr; };
 
 public:
 	std::string name;

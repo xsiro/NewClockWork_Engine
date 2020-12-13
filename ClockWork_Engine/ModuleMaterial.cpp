@@ -4,10 +4,10 @@
 #include "FileSys.h"
 #include "GameObject.h"
 #include "Application.h"
-//#include "ResourceTexture.h"
+#include "ResourceTex.h"
 #include "glew/include/glew.h"
-//#include "ResourceMaterial.h"
-//#include "WindowAssets.h"
+#include "ResourceMat.h"
+#include "Assets.h"
 
 ModuleMaterial::ModuleMaterial() : ModuleComponent(), checkers_image(false), _resource(nullptr), colored(false)
 {
@@ -47,12 +47,12 @@ ModuleMaterial::~ModuleMaterial()
 {
 	if (_resource != nullptr)
 	{
-		App->resources->ReleaseResource(_resourceUID);
+		App->res->ReleaseResource(_resourceUID);
 		_resource = nullptr;
 
 		if (_diffuseTexture != nullptr)
 		{
-			App->resources->ReleaseResource(_diffuseTexture->GetUID());
+			App->res->ReleaseResource(_diffuseTexture->GetUID());
 			_diffuseTexture = nullptr;
 		}
 	}
@@ -63,14 +63,14 @@ void ModuleMaterial::Update() {}
 void ModuleMaterial::SetResourceUID(uint UID)
 {
 	_resourceUID = UID;
-	_resource = dynamic_cast<ResourceMaterial*>(App->resources->RequestResource(UID));
+	_resource = dynamic_cast<ResourceMat*>(App->res->RequestResource(UID));
 
 	if (_resource->diffuseTextureUID != 0)
 	{
 		if (_diffuseTexture != nullptr)
-			App->resources->ReleaseResource(_diffuseTexture->GetUID());
+			App->res->ReleaseResource(_diffuseTexture->GetUID());
 
-		_diffuseTexture = dynamic_cast<ResourceTexture*>(App->resources->RequestResource(_resource->diffuseTextureUID));
+		_diffuseTexture = dynamic_cast<ResourceTex*>(App->res->RequestResource(_resource->diffuseTextureUID));
 	}
 
 	if (_diffuseTexture == nullptr)
@@ -128,12 +128,12 @@ void ModuleMaterial::OnEditor()
 				{
 					IM_ASSERT(payload->DataSize == sizeof(int));
 					int payload_n = *(const int*)payload->Data;
-					WindowAssets* assets_window = (WindowAssets*)App->editor->windows[ASSETS_WINDOW];
+					Assets* assets_window = (Assets*)App->gui->windows[ASSETS_WINDOW];
 					const char* file = assets_window->GetFileAt(payload_n);
-					Resource* possible_texture = App->resources->RequestResource(App->resources->Find(file));
+					Resource* possible_texture = App->res->RequestResource(App->res->Find(file));
 
 					if (possible_texture->GetType() == ResourceType::RESOURCE_TEXTURE)
-						_diffuseTexture = (ResourceTexture*)possible_texture;
+						_diffuseTexture = (ResourceTex*)possible_texture;
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -155,12 +155,12 @@ void ModuleMaterial::OnEditor()
 				{
 					IM_ASSERT(payload->DataSize == sizeof(int));
 					int payload_n = *(const int*)payload->Data;
-					WindowAssets* assets_window = (WindowAssets*)App->editor->windows[ASSETS_WINDOW];
+					Assets* assets_window = (Assets*)App->gui->windows[ASSETS_WINDOW];
 					const char* file = assets_window->GetFileAt(payload_n);
-					Resource* possible_texture = App->resources->RequestResource(App->resources->Find(file));
+					Resource* possible_texture = App->res->RequestResource(App->res->Find(file));
 
 					if (possible_texture->GetType() == ResourceType::RESOURCE_TEXTURE)
-						SetTexture(dynamic_cast<ResourceTexture*>(possible_texture));
+						SetTexture(dynamic_cast<ResourceTex*>(possible_texture));
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -168,7 +168,7 @@ void ModuleMaterial::OnEditor()
 	}
 }
 
-void ModuleMaterial::SetTexture(ResourceTexture* texture)
+void ModuleMaterial::SetTexture(ResourceTex* texture)
 {
 	_diffuseTexture = texture;
 	checkers_image = false;
@@ -198,7 +198,7 @@ void ModuleMaterial::AssignCheckersImage()
 	checkers_image = true;
 }
 
-ModuleMaterial* ModuleMaterial::GetDiffuseTexture()
+ResourceTex* ModuleMaterial::GetDiffuseTexture()
 {
 	return _diffuseTexture;
 }

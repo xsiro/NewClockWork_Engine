@@ -81,7 +81,7 @@ void Scene::Draw()
 			{
 				IM_ASSERT(payload->DataSize == sizeof(int));
 				int payload_n = *(const int*)payload->Data;
-				WindowAssets* assets_window = (WindowAssets*)App->gui->windows[ASSETS_WINDOW];
+				Assets* assets_window = (Assets*)App->gui->windows[ASSETS_WINDOW];
 				const char* file = assets_window->GetFileAt(payload_n);
 				App->scene->AddGameObject(App->res->RequestGameObject(file));
 			}
