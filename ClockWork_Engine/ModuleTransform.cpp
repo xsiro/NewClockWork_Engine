@@ -36,6 +36,8 @@ ModuleTransform::ModuleTransform(float3 position, Quat rotation, float3 scale) :
 
 ModuleTransform::~ModuleTransform() {}
 
+void ModuleTransform::Update() {}
+
 void ModuleTransform::Save(GnJSONArray& save_array)
 {
 	JSON save_object;

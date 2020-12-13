@@ -24,11 +24,11 @@ public:
 	~ModuleGui();
 
 	bool Init();
-	
+	bool Start() override;
 	update_status Update(float dt);
 	update_status Draw();
 	bool CleanUp();
-
+	bool LoadConfig(JSON& config) override;
 	bool IsSceneFocused();
 	bool MouseOnScene();
 	void AddConsoleLog(const char* log, int warning_level);

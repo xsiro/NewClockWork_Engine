@@ -14,7 +14,7 @@ public:
 private:
 	void DrawDirectoryRecursive(const char* directory, const char* filter_extension);
 	void DrawCurrentFolder();
-
+	char selectedItem[256];
 private:
 	std::string current_folder;
 };

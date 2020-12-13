@@ -43,7 +43,7 @@ public:
 
 	void SetCapActive(GLenum cap, bool active);
 	void SetVSYNC(bool enabled);
-
+	bool LoadConfig(JSON& config) override;
 	void DrawRay();
 
 private:

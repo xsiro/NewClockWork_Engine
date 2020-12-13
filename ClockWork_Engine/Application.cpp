@@ -1,102 +1,106 @@
 #include "Application.h"
+#include "glew/include/glew.h"
+#include "Globals.h"
+#include "FileSys.h"
+#include "Time.h"
+#include "JSON.h"
+#include <string>
+#include "parson/parson.h"
 
-
-Application::Application()
+Application::Application(int argc, char* args[]) : argc(argc), args(args), want_to_save(false), want_to_load(false), in_game(false)
 {
 	window = new ModuleWindow(this);
-	input = new ModuleInput(this);	
-	scene = new ModuleSceneIntro(this);
-	
-	gui = new ModuleGui(this);
+	input = new ModuleInput(this);
 	renderer3D = new ModuleRenderer3D(this);
 	camera = new ModuleCamera3D(this);
-	physics = new ModulePhysics3D(this);
-
+	scene = new ModuleSceneIntro(this);
+	gui = new ModuleGui(this);
 	res = new ModuleResources(this);
-	
-
-
-	// The order of calls is very important!
-	// Modules will Init() Start() and Update in this order
-	// They will CleanUp() in reverse order
 
 	// Main Modules
 	AddModule(window);
+	AddModule(res);
 	AddModule(camera);
-	
-	
 	AddModule(input);
-	AddModule(gui);
-	AddModule(physics);
-	
-	
-	
-	// Scenes
 	AddModule(scene);
-	
+	AddModule(gui);
+
 	// Renderer last!
 	AddModule(renderer3D);
-	max_ms = 1000 / 60;
-	fps = 0;
+
+	int cap = 60;
+	max_ms = 1000 / cap;
 }
 
 Application::~Application()
 {
-	std::vector<Module*>::iterator item = modules.begin();
-	for (; item != modules.end(); item = next(item))
-		delete(*item);
+	std::vector<Module*>::reverse_iterator item = modules_vector.rbegin();
 
-	modules.clear();
+	while (item != modules_vector.rend())
+	{
+		delete* item;
+		++item;
+	}
 }
 
 bool Application::Init()
 {
 	bool ret = true;
 
-	// Call Init() in all modules
-	std::vector<Module*>::iterator item = modules.begin();
-	glewInit();
+	FileSys::Init();
+	
 
-	while(item != modules.end() && ret == true)
+	char* buffer = nullptr;
+
+	uint size = FileSys::Load("Library/Config/config.json", &buffer);
+	JSON config(buffer);
+
+	engine_name = config.GetString("engineName", "ClockWork_Engine");
+	engine_version = config.GetString("version", "0.0");
+
+	GnJSONArray modules_array(config.GetArray("modules_config"));
+
+	// Call Init() in all modules
+	for (size_t i = 0; i < modules_vector.size() && ret == true; i++)
 	{
-		ret = (*item)->Init();
-		item = next(item);
+		JSON module_config(modules_array.GetObjectInArray(modules_vector[i]->name));
+
+		ret = modules_vector[i]->LoadConfig(module_config);
+		ret = modules_vector[i]->Init();
 	}
 
 	// After all Init calls we call Start() in all modules
 	LOG("Application Start --------------");
-	item = modules.begin();
-
-	while(item != modules.end() && ret == true)
+	for (size_t i = 0; i < modules_vector.size() && ret == true; i++)
 	{
-		ret = (*item)->Start();
-		item = next(item);
-	} 
-	LOG("Vendor: %s", glGetString(GL_VENDOR));
-	LOG("Renderer: %s", glGetString(GL_RENDERER));
-	LOG("OpenGL version supported %s", glGetString(GL_VERSION));
-	LOG("GLSL: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-	ms_timer.Start();
+		ret = modules_vector[i]->Start();
+	}
+
+
+	config.Release();
+	RELEASE_ARRAY(buffer);
+
+	
 	return ret;
 }
 
 // ---------------------------------------------
 void Application::PrepareUpdate()
 {
-	dt = (float)ms_timer.Read() / 1000.0f;
-	ms_timer.Start();
+	
 	fps = 1.0f / dt;
 }
 
 // ---------------------------------------------
 void Application::FinishUpdate()
 {
-	int last_frame_ms = ms_timer.Read();
-
+	Uint32 last_frame_ms;
 	if (last_frame_ms < max_ms)
 	{
 		SDL_Delay(max_ms - last_frame_ms);
 	}
+
+	
 }
 
 // Call PreUpdate, Update and PostUpdate on all modules
@@ -104,29 +108,40 @@ update_status Application::Update()
 {
 	update_status ret = UPDATE_CONTINUE;
 	PrepareUpdate();
-	
-	std::vector<Module*>::iterator item = modules.begin();
 
-	while(item != modules.end() && ret == UPDATE_CONTINUE)
+	for (size_t i = 0; i < modules_vector.size() && ret == UPDATE_CONTINUE; i++)
 	{
-		ret = (*item)->PreUpdate(dt);
-		item = next(item);
+		ret = modules_vector[i]->PreUpdate(dt);
 	}
 
-	item = modules.begin();
-
-	while (item != modules.end() && ret == UPDATE_CONTINUE)
+	for (size_t i = 0; i < modules_vector.size() && ret == UPDATE_CONTINUE; i++)
 	{
-		ret = (*item)->Update(dt);
-		item = next(item);
+		ret = modules_vector[i]->Update(dt);
 	}
 
-	item = modules.begin();
-
-	while (item != modules.end() && ret == UPDATE_CONTINUE)
+	for (size_t i = 0; i < modules_vector.size() && ret == UPDATE_CONTINUE; i++)
 	{
-		ret = (*item)->PostUpdate(dt);
-		item = next(item);
+		ret = modules_vector[i]->PostUpdate(dt);
+	}
+
+	if (!endFrameTasks.empty()) {
+		for (size_t i = 0; i < endFrameTasks.size(); i++)
+		{
+			endFrameTasks.top()->OnFrameEnd();
+			endFrameTasks.pop();
+		}
+	}
+
+	if (want_to_save)
+	{
+		scene->Save(_file_to_save);
+		want_to_save = false;
+	}
+
+	if (want_to_load)
+	{
+		scene->Load(_file_to_load);
+		want_to_load = false;
 	}
 
 	FinishUpdate();
@@ -136,128 +151,20 @@ update_status Application::Update()
 bool Application::CleanUp()
 {
 	bool ret = true;
-	std::vector<Module*>::iterator item = modules.begin();
-
-
-	while(item != modules.end() && ret == true)
+	for (int i = modules_vector.size() - 1; i > 0; i--)
 	{
-		ret = (*item)->CleanUp();
-		item = next(item);
+		modules_vector[i]->CleanUp();
 	}
+
+	FileSys::CleanUp();
+
 	return ret;
 }
 
-int Application::CPUCount()
-{
-	return SDL_GetCPUCount();
-}
 
-int Application::CPUCache()
-{
-	return SDL_GetCPUCacheLineSize();
-}
-
-int Application::SystemRAM()
-{
-	int TransformtoGB = SDL_GetSystemRAM() * 0.001;
-	return TransformtoGB;
-}
-const char* Application::SystemCaps()
-{
-	Caps.clear();
-	// IF the processor has certain register it will be added to the string
-	if (SDL_Has3DNow())
-	{
-		Caps.append("3D Now, ");
-	}
-
-	if (SDL_HasAVX())
-	{
-		Caps.append("AVX, ");
-	}
-
-	if (SDL_HasAVX2())
-	{
-		Caps.append("AVX2, ");
-	}
-
-	if (SDL_HasAltiVec())
-	{
-		Caps.append("AltiVec, ");
-	}
-
-	if (SDL_HasMMX())
-	{
-		Caps.append("MMX, ");
-	}
-
-	if (SDL_HasRDTSC())
-	{
-		Caps.append("RDTSC, ");
-	}
-
-	if (SDL_HasSSE())
-	{
-		Caps.append("SSE, ");
-	}
-
-	if (SDL_HasSSE2())
-	{
-		Caps.append("SSE2, ");
-	}
-
-	if (SDL_HasSSE3())
-	{
-		Caps.append("SSE3, ");
-	}
-
-	if (SDL_HasSSE41())
-	{
-		Caps.append("SSE41, ");
-	}
-
-	if (SDL_HasSSE41())
-	{
-		Caps.append("SSE42");
-	}
-
-	return Caps.data();
-}
 void Application::AddModule(Module* mod)
 {
-	modules.push_back(mod);
-}
-
-const char* Application::Brand() {
-	return (const char*)glGetString(GL_VENDOR);
-}
-
-const char* Application::Model() {
-	return (const char*)glGetString(GL_RENDERER);
-}
-
-int Application::Budget() {
-	int budget;
-	glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &budget);
-	return budget / 1024;
-}
-
-int Application::Usage() {
-	int usage;
-	glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &usage);
-	return usage / 1024;
-}
-
-int Application::Available() {
-	int available;
-	glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &available);
-	return available / 1024;
-}
-
-int Application::Reserved() {
-	int reserved;
-	glGetIntegerv(GL_GPU_MEMORY_INFO_EVICTED_MEMORY_NVX, &reserved);
-	return reserved / 1024;
+	modules_vector.push_back(mod);
 }
 
 float Application::GetFPS() { return fps; }
@@ -271,7 +178,24 @@ int Application::GetFPSMax()
 
 void Application::SetFPSMax(int fps_cap)
 {
-	max_ms = 1000 / fps_cap;
+	max_ms = 1000.0f / (float)fps_cap;
+}
+
+void Application::Save(const char* filePath)
+{
+	want_to_save = true;
+	//strcpy_s(_file_to_save, filePath);
+}
+
+void Application::Load(const char* filePath)
+{
+	want_to_load = true;
+	//strcpy_s(_file_to_load, filePath);
+}
+
+void Application::AddModuleToTaskStack(Module* callback)
+{
+	endFrameTasks.push(callback);
 }
 
 Hardware Application::GetHardware()
@@ -283,7 +207,7 @@ Hardware Application::GetHardware()
 	specs.cache = SDL_GetCPUCacheLineSize();
 
 	//RAM
-	specs.ram = SDL_GetSystemRAM() / 1000;
+	specs.ram = SDL_GetSystemRAM() / 1000.0f;
 
 	//Caps
 	specs.RDTSC = SDL_HasRDTSC();
@@ -315,13 +239,5 @@ Hardware Application::GetHardware()
 	return specs;
 }
 
-void Application::AddModuleToTaskStack(Module* callback)
-{
-	endFrameTasks.push(callback);
-}
 
-void Application::Load(const char* filePath)
-{
-	want_to_load = true;
-	_file_to_load = filePath;
-}
+

@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "FileSys.h"
 #include "Importer.h"
+#include "ResourceTex.h"
 
 #include <algorithm>
 
@@ -10,6 +11,7 @@ Assets::Assets() : Window()
 {
 	type = WindowType::ASSETS_WINDOW;
 	current_folder = "Assets";
+	selectedItem[0] = '\0';
 }
 
 Assets::~Assets()

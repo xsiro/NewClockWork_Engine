@@ -67,8 +67,8 @@ void Scene::Draw()
 		App->gui->mouseScenePosition.x = App->input->GetMouseX() - App->gui->sceneWindowOrigin.x;
 		App->gui->mouseScenePosition.y = App->input->GetMouseY() - App->gui->sceneWindowOrigin.y;
 
-		if (App->in_game)
-			DrawGameTimeDataOverlay();
+		/*if (App->in_game)
+			DrawGameTimeDataOverlay();*/
 
 		if (App->gui->image_size.x != window_size.x || App->gui->image_size.y != window_size.y)
 			App->gui->OnResize(window_size);

@@ -1,8 +1,7 @@
 #pragma once
 
 class Application;
-
-
+class JSON;
 class Module
 {
 private:
@@ -28,6 +27,11 @@ public:
 
 
 	virtual bool Start()
+	{
+		return true;
+	}
+
+	virtual bool LoadConfig(JSON& object)
 	{
 		return true;
 	}

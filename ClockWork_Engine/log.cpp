@@ -1,9 +1,9 @@
 #pragma once
 #include "Application.h"
 #include "Globals.h"
-#include "ModuleGui.h"
 
-void log(const char file[], int line, const char* format, ...)
+
+void log(int warning_level, const char file[], int line, const char* format, ...)
 {
 	static char tmp_string[4096];
 	static char tmp_string2[4096];
@@ -15,5 +15,6 @@ void log(const char file[], int line, const char* format, ...)
 	va_end(ap);
 	sprintf_s(tmp_string2, 4096, "\n%s(%d) : %s", file, line, tmp_string);
 	OutputDebugString(tmp_string2);
-
+	if (App != nullptr)
+		App->gui->AddConsoleLog(tmp_string, warning_level);
 }

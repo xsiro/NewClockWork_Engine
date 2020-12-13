@@ -10,13 +10,13 @@
 #pragma comment( lib, "glew/libx86/glew32.lib" )
 #pragma comment( lib, "glew/libx86/glew32s.lib" )
 
-//#ifdef _DEBUG
-//#pragma comment( lib, "MathGeoLib/libx86/Debug/MathGeoLib.lib" )
-//
-//#else
-//#pragma comment( lib, "MathGeoLib/libx86/Release/MathGeoLib.lib" )
-//
-//#endif
+#ifdef _DEBUG
+#pragma comment( lib, "MathGeoLib/libx86/Debug/MathGeoLib.lib" )
+
+#else
+#pragma comment( lib, "MathGeoLib/libx86/Release/MathGeoLib.lib" )
+
+#endif
 
 
 enum main_states
@@ -29,9 +29,9 @@ enum main_states
 };
 
 Application* App = NULL;
-std::vector<std::string> log_record;
 
-int main(int argc, char ** argv)
+
+int main(int argc, char* argv[])
 {
 	LOG("Starting game '%s'...", TITLE);
 
@@ -46,7 +46,7 @@ int main(int argc, char ** argv)
 		case MAIN_CREATION:
 
 			LOG("-------------- Application Creation --------------");
-			App = new Application();
+			App = new Application(argc, argv);
 			state = MAIN_START;
 			break;
 

@@ -253,3 +253,24 @@ void Configuration::Draw()
 	}
 	ImGui::End();
 }
+
+void Configuration::GetMemoryStatistics(const char* gpu_brand, GLint& vram_budget, GLint& vram_usage, GLint& vram_available, GLint& vram_reserved)
+{
+	if (strcmp(gpu_brand, "NVIDIA Corporation") == 0)
+	{
+		glGetIntegerv(GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX, &vram_budget);
+		glGetIntegerv(GL_GPU_MEMORY_INFO_DEDICATED_VIDMEM_NVX, &vram_usage);
+		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, &vram_available);
+		glGetIntegerv(GL_GPU_MEMORY_INFO_EVICTED_MEMORY_NVX, &vram_reserved);
+	}
+	else if (strcmp(gpu_brand, "ATI Technologies") == 0)
+	{
+		
+		vram_budget = -1;
+		
+		vram_usage = -1;
+		glGetIntegerv(GL_VBO_FREE_MEMORY_ATI, &vram_available);
+	
+		vram_reserved = -1;
+	}
+}

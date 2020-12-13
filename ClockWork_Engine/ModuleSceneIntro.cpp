@@ -6,7 +6,7 @@
 #include "GameObject.h"
 #include "JSON.h"
 #include "ModuleTransform.h"
-#include "ImGuizmo/ImGuizmo.h"
+
 
 ModuleSceneIntro::ModuleSceneIntro(bool start_enabled) : Module(start_enabled), show_grid(true), selected_object(nullptr), root(nullptr)
 {
@@ -115,7 +115,7 @@ bool ModuleSceneIntro::Save(const char* file_path)
 
 	FileSys::Save(file_path, buffer, size);
 
-	std::string assets_path = "Assets/";
+	std::string assets_path = "Assets/scene";
 	assets_path.append(FileSys::GetFile(file_path));
 
 	FileSys::DuplicateFile(file_path, assets_path.c_str());
@@ -180,21 +180,21 @@ void ModuleSceneIntro::EditTransform()
 	float4x4 projectionMatrix = App->camera->GetProjectionMatrixM().Transposed();
 	float4x4 objectTransform = selected_object->GetTransform()->GetGlobalTransform().Transposed();
 
-	ImGuizmo::SetDrawlist();
-	ImGuizmo::SetRect(App->gui->sceneWindowOrigin.x, App->gui->sceneWindowOrigin.y, App->gui->image_size.x, App->gui->image_size.y);
+	//ImGuizmo::SetDrawlist();
+	//ImGuizmo::SetRect(App->gui->sceneWindowOrigin.x, App->gui->sceneWindowOrigin.y, App->gui->image_size.x, App->gui->image_size.y);
 
 	float tempTransform[16];
 	memcpy(tempTransform, objectTransform.ptr(), 16 * sizeof(float));
 
-	ImGuizmo::Manipulate(viewMatrix.ptr(), projectionMatrix.ptr(), mCurrentGizmoOperation, mCurrentGizmoMode, tempTransform);
+	//ImGuizmo::Manipulate(viewMatrix.ptr(), projectionMatrix.ptr(), mCurrentGizmoOperation, mCurrentGizmoMode, tempTransform);
 
-	if (ImGuizmo::IsUsing())
+	/*if (ImGuizmo::IsUsing())
 	{
 		float4x4 newTransform;
 		newTransform.Set(tempTransform);
 		objectTransform = newTransform.Transposed();
 		selected_object->GetTransform()->SetGlobalTransform(objectTransform);
-	}
+	}*/
 }
 
 bool ModuleSceneIntro::ClearScene()
@@ -207,8 +207,63 @@ bool ModuleSceneIntro::ClearScene()
 	return ret;
 }
 
+bool ModuleSceneIntro::Load(const char* scene_file)
+{
+	bool ret = true;
 
+	std::string format = FileSys::GetFileFormat(scene_file);
+	if (format != ".scene")
+	{
+		LOG_WARNING("%s is not a valid scene format and can't be loaded", scene_file);
+		return false;
+	}
 
+	ClearScene();
 
+	char* buffer = NULL;
+	FileSys::Load(scene_file, &buffer);
+
+	JSON base_object(buffer);
+	GnJSONArray gameObjects(base_object.GetArray("Game Objects"));
+
+	std::vector<GameObject*> createdObjects;
+
+	for (size_t i = 0; i < gameObjects.Size(); i++)
+	{
+		//load game object
+		GameObject* gameObject = new GameObject();
+		uint parentUUID = gameObject->Load(&gameObjects.GetObjectAt(i));
+		createdObjects.push_back(gameObject);
+
+		//check if it's the root game object
+		if (strcmp(gameObject->GetName(), "Root") == 0) {
+			root = gameObject;
+			selected_object = root;
+		}
+
+		//Get game object's parent
+		for (size_t i = 0; i < createdObjects.size(); i++)
+		{
+			if (createdObjects[i]->UUID == parentUUID)
+			{
+				createdObjects[i]->AddChild(gameObject);
+			}
+		}
+	}
+
+	root->UpdateChildrenTransforms();
+
+	if (root != nullptr)
+		LOG("Scene: %s loaded successfully", scene_file);
+
+	return ret;
+}
+
+bool ModuleSceneIntro::LoadConfig(JSON& config)
+{
+	show_grid = config.GetBool("show_grid");
+
+	return true;
+}
 
 

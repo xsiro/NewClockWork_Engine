@@ -342,4 +342,9 @@
       <Filter>Sources\Modules</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="config.json">
+      <Filter>Sources\Modules</Filter>
+    </None>
+  </ItemGroup>
 </Project>

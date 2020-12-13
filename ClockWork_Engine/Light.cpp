@@ -2,7 +2,7 @@
 #include "Light.h"
 #include <gl/GL.h>
 #include "imgui.h"
-
+#include "JSON.h"
 
 Light::Light() : ModuleComponent(), ref(-1), position(0.0f, 0.0f, 0.0f)
 {
@@ -69,6 +69,27 @@ void Light::OnEditor()
 	}
 }
 
+void Light::Save(GnJSONArray& save_array)
+{
+	JSON save_object;
+
+	save_object.AddString("name", name.c_str());
+	save_object.AddInt("Type", type);
+	save_object.AddFloat3("position", float3(position.x, position.y, position.z));
+	save_object.AddColor("diffuse", diffuse);
+	save_object.AddColor("ambient", ambient);
+
+	save_array.AddObject(save_object);
+}
+
+void Light::Load(JSON& load_object)
+{
+	name = load_object.GetString("name", "Light");
+	float3 fposition = load_object.GetFloat3("position");
+	position = vec3(fposition.x, fposition.y, fposition.z);
+	diffuse = load_object.GetColor("diffuse");
+	ambient = load_object.GetColor("ambient");
+}
 
 void Light::Active(bool active)
 {

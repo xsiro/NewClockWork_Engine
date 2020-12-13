@@ -8,7 +8,7 @@
 #include <vector>
 #include "FileSys.h"
 
-
+#include "JSON.h"
 
 #include "ModuleWindow.h"
 #include "ModuleRenderer3D.h"
@@ -145,7 +145,16 @@ bool ModuleRenderer3D::Init()
 	return ret;
 }
 
+bool ModuleRenderer3D::LoadConfig(JSON& config)
+{
+	//debug = config.GetBool("debug");
+	vsync = config.GetBool("vsync");
 
+	draw_vertex_normals = config.GetBool("draw_vertex_normals");
+	draw_face_normals = config.GetBool("draw_face_normals");
+
+	return true;
+}
 
 // PreUpdate: clear buffer
 update_status ModuleRenderer3D::PreUpdate(float dt)

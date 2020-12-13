@@ -1,6 +1,6 @@
 #include "Application.h"
 #include "ModuleGui.h"
-
+#include "JSON.h"
 #include "ModuleMesh.h"
 #include "ModuleSceneIntro.h"
 #include "GameObject.h"
@@ -73,6 +73,18 @@ bool ModuleGui::Init()
 	return true;
 }
 
+bool ModuleGui::Start()
+{
+	bool ret = true;
+
+	for (size_t i = 0; i < MAX_WINDOWS; i++)
+	{
+		windows[i]->Init();
+	}
+
+	return ret;
+}
+
 update_status ModuleGui::Update(float dt)
 {
 	update_status ret = UPDATE_CONTINUE;
@@ -94,7 +106,7 @@ update_status ModuleGui::Draw()
 			windows[i]->Draw();
 	}
 
-	ShowGameButtons();
+	//ShowGameButtons();
 
 	//Console
 	if (show_console_window)
@@ -128,8 +140,8 @@ update_status ModuleGui::Draw()
 	}
 
 	//Preferences
-	if (show_preferences_window)
-		ShowPreferencesWindow();
+	/*if (show_preferences_window)
+		ShowPreferencesWindow();*/
 
 	if (file_dialog == opened)
 		LoadFile(".scene", "Assets/");
@@ -158,36 +170,36 @@ bool ModuleGui::CleanUp()
 	return true;
 }
 
-//bool ModuleGui::LoadConfig(GnJSONObj& config)
-//{
-//	GnJSONArray jsonWindows(config.GetArray("windows"));
-//
-//	GnJSONObj window = jsonWindows.GetObjectInArray("scene");
-//	windows[SCENE_WINDOW]->visible = window.GetBool("visible");
-//
-//	window = jsonWindows.GetObjectInArray("inspector");
-//	windows[INSPECTOR_WINDOW]->visible = window.GetBool("visible");
-//
-//	window = jsonWindows.GetObjectInArray("hierarchy");
-//	windows[HIERARCHY_WINDOW]->visible = window.GetBool("visible");
-//
-//	window = jsonWindows.GetObjectInArray("assets");
-//	windows[ASSETS_WINDOW]->visible = window.GetBool("visible");
-//
-//	window = jsonWindows.GetObjectInArray("console");
-//	show_console_window = window.GetBool("visible");
-//
-//	window = jsonWindows.GetObjectInArray("configuration");
-//	windows[CONFIGURATION_WINDOW]->visible = window.GetBool("visible");
-//
-//	window = jsonWindows.GetObjectInArray("preferences");
-//	show_preferences_window = window.GetBool("visible");
-//
-//	window = jsonWindows.GetObjectInArray("about");
-//	windows[ABOUT_WINDOW]->visible = window.GetBool("visible");
-//
-//	return true;
-//}
+bool ModuleGui::LoadConfig(JSON& config)
+{
+	GnJSONArray jsonWindows(config.GetArray("windows"));
+
+	JSON window = jsonWindows.GetObjectInArray("scene");
+	windows[SCENE_WINDOW]->visible = window.GetBool("visible");
+
+	window = jsonWindows.GetObjectInArray("inspector");
+	windows[INSPECTOR_WINDOW]->visible = window.GetBool("visible");
+
+	window = jsonWindows.GetObjectInArray("hierarchy");
+	windows[HIERARCHY_WINDOW]->visible = window.GetBool("visible");
+
+	window = jsonWindows.GetObjectInArray("assets");
+	windows[ASSETS_WINDOW]->visible = window.GetBool("visible");
+
+	window = jsonWindows.GetObjectInArray("console");
+	show_console_window = window.GetBool("visible");
+
+	window = jsonWindows.GetObjectInArray("configuration");
+	windows[CONFIGURATION_WINDOW]->visible = window.GetBool("visible");
+
+	window = jsonWindows.GetObjectInArray("preferences");
+	show_preferences_window = window.GetBool("visible");
+
+	window = jsonWindows.GetObjectInArray("about");
+	windows[ABOUT_WINDOW]->visible = window.GetBool("visible");
+
+	return true;
+}
 
 bool ModuleGui::IsSceneFocused()
 {

@@ -5,7 +5,7 @@
 #include "ModuleRenderer3D.h"
 #include "imgui.h"
 #include "JSON.h"
-
+#include "MathGeoLib/include/MathGeoLib.h"
 
 Camera::Camera() : ModuleComponent(nullptr), _aspectRatio(16.0f / 9.0f), fixedFOV(FIXED_HORIZONTAL_FOV) {
 	type = ComponentType::CAMERA;

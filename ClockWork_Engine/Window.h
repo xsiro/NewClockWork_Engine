@@ -17,7 +17,7 @@ public:
 	Window() : visible(false) {};
 	virtual ~Window() {};
 	virtual void Draw() = 0;
-
+	virtual bool Init() { return true; };
 public:
 	bool visible;
 	WindowType type = MAX_WINDOWS;

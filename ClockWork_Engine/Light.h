@@ -2,9 +2,10 @@
 #pragma once
 #include "Color.h"
 #include "glmath.h"
-#include "ModuleComponent.h"
+#include "mODULEComponent.h"
 
-
+class GnJSONArray;
+class json;
 class GameObject;
 
 class Light : public ModuleComponent {
@@ -19,7 +20,8 @@ public:
 	void Active(bool active);
 	void Render();
 	void OnEditor() override;
-	
+	void Save(GnJSONArray& save_array);
+	void Load(JSON& load_object);
 
 public:
 	vec3 position;

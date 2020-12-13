@@ -21,7 +21,7 @@ public:
 	update_status Update(float dt);
 	void HandleInput();
 	bool CleanUp();
-
+	bool LoadConfig(JSON& config) override;
 	void AddGameObject(GameObject* gameObject);
 	void DeleteGameObject(GameObject* gameObject);
 	GameObject* GetRoot() { return root; }

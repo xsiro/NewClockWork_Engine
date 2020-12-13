@@ -4,9 +4,7 @@
 #include "Importer.h"
 #include "ModuleSceneIntro.h"
 #include "Application.h"
-
-
-
+#include "JSON.h"
 #include "Resource.h"
 #include "ResourceMod.h"
 #include "ResourceMesh.h"
@@ -14,6 +12,7 @@
 #include "ResourceTex.h"
 
 #include "Import.h"
+#include "Assets.h"
 #include <algorithm>
 
 #include "MathGeoLib/include/MathGeoLib.h"
@@ -21,6 +20,8 @@
 ModuleResources::ModuleResources(bool start_enabled) : Module(start_enabled), _toDeleteAsset(-1), _toDeleteResource(-1)
 {
 	name = "resources";
+	modelImportingOptions = Options();
+	textureImportingOptions = TextureImportingOptions();
 }
 
 ModuleResources::~ModuleResources() {}
@@ -36,7 +37,7 @@ bool ModuleResources::Init()
 	//std::vector<std::string> dirs;
 	//FileSystem::DiscoverFilesRecursive("Library", files, dirs);
 
-	CheckAssetsRecursive("Assets");
+	CheckAssetsRecursive("");
 
 	//LoadEngineAssets();
 
@@ -153,7 +154,64 @@ void ModuleResources::OnFrameEnd()
 }
 
 
+bool ModuleResources::MetaUpToDate(const char* assets_file, const char* meta_file)
+{
+	bool ret = true;
 
+	char* buffer = nullptr;
+	uint size = FileSys::Load(meta_file, &buffer);
+	JSON meta(buffer);
+
+	uint UID = meta.GetInt("UID");
+	int lastModifiedMeta = meta.GetInt("lastModified");
+	uint lastModified = FileSys::GetLastModTime(assets_file);
+
+	if (lastModifiedMeta == lastModified && UID != 0)
+	{
+		std::string library_path = meta.GetString("Library path", "Library/NoPath");
+
+		if (library_path == "Library/NoPath")
+			library_path = Find(UID);
+
+		//check for the file itself to exist
+		if (!FileSys::Exists(library_path.c_str()))
+		{
+			ret = false;
+		}
+		//check its internal resources
+		else if (GetTypeFromPath(assets_file) == ResourceType::RESOURCE_MODEL)
+		{
+			ret = ImporterMod::InternalResourcesExist(meta_file);
+		}
+
+		resources_data[UID].assetsFile = assets_file;
+		resources_data[UID].libraryFile = library_path;
+		resources_data[UID].type = GetTypeFromPath(assets_file);
+	}
+	else
+	{
+		ret = false;
+	}
+
+	meta.Release();
+	RELEASE_ARRAY(buffer);
+
+	return ret;
+}
+
+int ModuleResources::GetUIDFromMeta(const char* meta_file)
+{
+	char* buffer = nullptr;
+	uint size = FileSys::Load(meta_file, &buffer);
+	JSON meta(buffer);
+
+	int UID = meta.GetInt("UID", -1);
+
+	meta.Release();
+	RELEASE_ARRAY(buffer);
+
+	return UID;
+}
 
 int ModuleResources::Find(const char* assets_file)
 {
@@ -182,7 +240,7 @@ const char* ModuleResources::Find(uint UID)
 	if (resources_data.find(UID) != resources_data.end() && resources_data[UID].libraryFile.size() > 0)
 		return resources_data[UID].libraryFile.c_str();
 
-	std::vector<std::string> directories = { "Library/Config/","Library/Models/","Library/Meshes/","Library/Materials/","Library/Textures/", "Library/Scenes/" };
+	std::vector<std::string> directories = { "Scenes/" };
 	std::vector<std::string> extensions = { ".json",".model",".mesh",".material",".dds", ".scene" };
 
 	for (size_t i = 0; i < directories.size(); i++)
@@ -231,14 +289,6 @@ bool ModuleResources::Exists(uint UID)
 
 uint ModuleResources::ImportFile(const char* assets_file)
 {
-	/*
-	std::string meta_file = assets_file;
-	meta_file.append(".meta");
-
-	if(FileSystem::Exists(meta_file.c_str()))
-		return GetUIDFromMeta(meta_file.c_str());
-
-	*/
 
 	ResourceType type = GetTypeFromPath(assets_file);
 
@@ -247,7 +297,7 @@ uint ModuleResources::ImportFile(const char* assets_file)
 
 	char* fileBuffer;
 	uint size = FileSys::Load(assets_file, &fileBuffer);
-
+	std::string library_path;
 	switch (type)
 	{
 	case RESOURCE_MODEL:
@@ -257,6 +307,10 @@ uint ModuleResources::ImportFile(const char* assets_file)
 		ImporterTex::Import(fileBuffer, (ResourceTex*)resource, size);
 		break;
 	case RESOURCE_SCENE:
+		library_path = "/Scenes";
+		library_path.append(FileSys::GetFile(assets_file));
+		FileSys::DuplicateFile(assets_file, library_path.c_str());
+		library_path.clear();
 		break;
 	default:
 		LOG_WARNING("Trying to import unknown file: %s", assets_file);
@@ -492,8 +546,8 @@ Resource* ModuleResources::LoadResource(uint UID, ResourceType type)
 			ret = ImporterMat::Load(buffer, (ResourceMat*)resource, size);
 			break;
 		case RESOURCE_TEXTURE:
-			ret = ImporterTex::Load(buffer, (ResourceTex*)resource, size);
-			LoadMetaFile(resource);
+			/*ret = ImporterTex::Load(buffer, (ResourceTex*)resource, size);*/
+			/*LoadMetaFile(resource);*/
 			break;
 		case RESOURCE_SCENE:
 			break;
@@ -710,7 +764,7 @@ bool ModuleResources::SaveResource(Resource* resource)
 		size = ImporterMat::Save((ResourceMat*)resource, &buffer);
 		break;
 	case RESOURCE_TEXTURE:
-		size = ImporterTex::Save((ResourceTex*)resource, &buffer);
+		//size = ImporterTex::Save((ResourceTex*)resource, &buffer);
 		break;
 	case RESOURCE_SCENE:
 		break;
@@ -724,8 +778,8 @@ bool ModuleResources::SaveResource(Resource* resource)
 		RELEASE_ARRAY(buffer);
 	}
 
-	if (resource->GetType() == ResourceType::RESOURCE_MODEL || resource->GetType() == ResourceType::RESOURCE_TEXTURE)
-		ret = SaveMetaFile(resource);
+	//if (resource->GetType() == ResourceType::RESOURCE_MODEL || resource->GetType() == ResourceType::RESOURCE_TEXTURE)
+	//	ret = SaveMetaFile(resource);
 
 	return ret;
 }
@@ -785,23 +839,23 @@ std::string ModuleResources::GenerateLibraryPath(uint uid, ResourceType type)
 	switch (type)
 	{
 	case RESOURCE_MODEL:
-		path = "Library/Models/";
+		path = "";
 		path.append(std::to_string(uid) + ".model");
 		break;
 	case RESOURCE_MESH:
-		path = "Library/Meshes/";
+		path = "";
 		path.append(std::to_string(uid) + ".mesh");
 		break;
 	case RESOURCE_MATERIAL:
-		path = "Library/Materials/";
+		path = "";
 		path.append(std::to_string(uid) + ".material");
 		break;
 	case RESOURCE_TEXTURE:
-		path = "Library/Textures/";
+		path = "";
 		path.append(std::to_string(uid) + ".dds");
 		break;
 	case RESOURCE_SCENE:
-		path = "Library/Scenes/";
+		path = "";
 		path.append(std::to_string(uid) + ".scene");
 		break;
 	case RESOURCE_UNKNOWN:
@@ -820,11 +874,11 @@ std::string ModuleResources::GetLibraryFolder(const char* file_in_assets)
 
 	switch (type)
 	{
-	case RESOURCE_MODEL: return std::string("Library/Models/"); break;
-	case RESOURCE_MESH: return std::string("Library/Meshes/"); break;
-	case RESOURCE_MATERIAL: return std::string("Library/Materials/"); break;
-	case RESOURCE_TEXTURE: return std::string("Library/Textures/");	break;
-	case RESOURCE_SCENE: return std::string("Library/Scenes/");	break;
+	case RESOURCE_MODEL: return std::string(""); break;
+	case RESOURCE_MESH: return std::string(""); break;
+	case RESOURCE_MATERIAL: return std::string(""); break;
+	case RESOURCE_TEXTURE: return std::string("");	break;
+	case RESOURCE_SCENE: return std::string("");	break;
 	default: break;
 	}
 }
@@ -839,11 +893,11 @@ const char* ModuleResources::GenerateAssetsPath(const char* path)
 	switch (type)
 	{
 	case RESOURCE_MODEL:
-		sprintf_s(library_path, 128, "Assets/Models/%s", file.c_str()); break;
+		sprintf_s(library_path, 128, "", file.c_str()); break;
 	case RESOURCE_TEXTURE:
-		sprintf_s(library_path, 128, "Assets/Textures/%s", file.c_str()); break;
+		sprintf_s(library_path, 128, "", file.c_str()); break;
 	case RESOURCE_SCENE:
-		sprintf_s(library_path, 128, "Assets/Scenes/%s", file.c_str()); break;
+		sprintf_s(library_path, 128, "", file.c_str()); break;
 	default:
 		break;
 	}

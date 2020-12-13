@@ -120,7 +120,7 @@ update_status ModuleCamera3D::Update(float dt)
 		((App->input->GetKey(SDL_SCANCODE_LALT) == KEY_REPEAT) && (App->input->GetMouseButton(SDL_BUTTON_LEFT) == KEY_REPEAT)))
 		Orbit(dt);
 
-	if (App->input->GetMouseButton(SDL_BUTTON_LEFT) == KEY_DOWN && !ImGuizmo::IsOver() && App->gui->MouseOnScene())
+	if (App->input->GetMouseButton(SDL_BUTTON_LEFT) == KEY_DOWN)
 	{
 		GameObject* pickedGameObject = PickGameObject();
 		App->scene->selected_object = pickedGameObject;
