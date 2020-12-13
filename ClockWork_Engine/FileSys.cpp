@@ -426,46 +426,7 @@ uint FileSys::Save(const char* file, const void* buffer, unsigned int size, bool
 }
 
 // Save a whole buffer to disk
-uint FileSys::Save(const char* file, const void* buffer, unsigned int size, bool append)
-{
-	unsigned int ret = 0;
 
-	bool overwrite = PHYSFS_exists(file) != 0;
-	PHYSFS_file* fs_file = (append) ? PHYSFS_openAppend(file) : PHYSFS_openWrite(file);
-
-	if (fs_file != nullptr)
-	{
-		uint written = (uint)PHYSFS_write(fs_file, (const void*)buffer, 1, size);
-		if (written != size)
-		{
-			LOG_ERROR("[error] File System error while writing to file %s: %s", file, PHYSFS_getLastError());
-		}
-		else
-		{
-			if (append == true)
-			{
-				LOG("Added %u data to [%s%s]", size, GetWriteDir(), file);
-			}
-			else if (overwrite == true)
-			{
-				LOG("File [%s%s] overwritten with %u bytes", GetWriteDir(), file, size);
-			}
-			else
-			{
-				LOG("New file created [%s%s] of %u bytes", GetWriteDir(), file, size);
-			}
-
-			ret = written;
-		}
-
-		if (PHYSFS_close(fs_file) == 0)
-			LOG_ERROR("[error] File System error while closing file %s: %s", file, PHYSFS_getLastError());
-	}
-	else
-		LOG_ERROR("[error] File System error while opening file %s: %s", file, PHYSFS_getLastError());
-
-	return ret;
-}
 
 bool FileSys::Delete(const char* file)
 {
