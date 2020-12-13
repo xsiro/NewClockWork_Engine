@@ -1,7 +1,7 @@
 #include "JSON.h"
 #include "parson/parson.h"
 
-//GnJSONObject ====================================================
+
 
 JSON::JSON()
 {

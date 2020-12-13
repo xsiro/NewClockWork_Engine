@@ -218,11 +218,11 @@ void ModuleTransform::SetRotation(float x, float y, float z, float w)
 
 	UpdateGlobalTransform();
 }
-
-Quat ModuleTransform::GetRotation()
-{
-	return _rotation;
-}
+//
+//Quat ModuleTransform::GetRotation()
+//{
+//	return _rotation;
+//}
 
 void ModuleTransform::UpdateEulerRotation()
 {

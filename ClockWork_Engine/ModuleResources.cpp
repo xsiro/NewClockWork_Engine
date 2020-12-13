@@ -37,7 +37,7 @@ bool ModuleResources::Init()
 	//std::vector<std::string> dirs;
 	//FileSystem::DiscoverFilesRecursive("Library", files, dirs);
 
-	CheckAssetsRecursive("");
+	CheckAssetsRecursive("Assets");
 
 	//LoadEngineAssets();
 
@@ -133,7 +133,7 @@ void ModuleResources::OnEditor()
 
 void ModuleResources::LoadEngineAssets()
 {
-	ResourceTex* folder_tex = dynamic_cast<ResourceTex*>(RequestResource(Find("Assets/EngineAssets/folder.png")));
+	ResourceTex* folder_tex = dynamic_cast<ResourceTex*>(RequestResource(Find("Assets/Folder.png")));
 }
 
 void ModuleResources::OnFrameEnd()
@@ -240,7 +240,7 @@ const char* ModuleResources::Find(uint UID)
 	if (resources_data.find(UID) != resources_data.end() && resources_data[UID].libraryFile.size() > 0)
 		return resources_data[UID].libraryFile.c_str();
 
-	std::vector<std::string> directories = { "Scenes/" };
+	std::vector<std::string> directories = { "Assets/config/", "Assets/Models", "Assets/Textures/","Assets/Scenes/" };
 	std::vector<std::string> extensions = { ".json",".model",".mesh",".material",".dds", ".scene" };
 
 	for (size_t i = 0; i < directories.size(); i++)
@@ -817,15 +817,15 @@ const char* ModuleResources::GenerateLibraryPath(Resource* resource)
 	switch (resource->GetType())
 	{
 	case RESOURCE_MODEL:
-		sprintf_s(library_path, 128, "Library/Models/%d.model", resource->GetUID()); break;
+		sprintf_s(library_path, 128, "Assets/%d.model", resource->GetUID()); break;
 	case RESOURCE_MESH:
-		sprintf_s(library_path, 128, "Library/Meshes/%d.mesh", resource->GetUID()); break;
+		sprintf_s(library_path, 128, "Assets/%d.mesh", resource->GetUID()); break;
 	case RESOURCE_MATERIAL:
-		sprintf_s(library_path, 128, "Library/Materials/%d.material", resource->GetUID()); break;
+		sprintf_s(library_path, 128, "Assets/%d.material", resource->GetUID()); break;
 	case RESOURCE_TEXTURE:
-		sprintf_s(library_path, 128, "Library/Textures/%d.dds", resource->GetUID()); break;
+		sprintf_s(library_path, 128, "Assets/%d.dds", resource->GetUID()); break;
 	case RESOURCE_SCENE:
-		sprintf_s(library_path, 128, "Library/Scenes/%d.scene", resource->GetUID()); break;
+		sprintf_s(library_path, 128, "Assets/%d.scene", resource->GetUID()); break;
 	default:
 		break;
 	}
@@ -883,26 +883,26 @@ std::string ModuleResources::GetLibraryFolder(const char* file_in_assets)
 	}
 }
 
-const char* ModuleResources::GenerateAssetsPath(const char* path)
+std::string ModuleResources::GenerateAssetsPath(const char* path)
 {
 	ResourceType type = GetTypeFromPath(path);
 	std::string file = FileSys::GetFile(path);
-
-	char* library_path = new char[128];
+	file = FileSys::GetFile(file.c_str());
+	std::string assets_path;
 
 	switch (type)
 	{
 	case RESOURCE_MODEL:
-		sprintf_s(library_path, 128, "", file.c_str()); break;
+		assets_path = "Assets/Models/"; break;
 	case RESOURCE_TEXTURE:
-		sprintf_s(library_path, 128, "", file.c_str()); break;
+		assets_path = "Assets/Textures/"; break;
 	case RESOURCE_SCENE:
-		sprintf_s(library_path, 128, "", file.c_str()); break;
+		assets_path = "Assets/Scenes/"; break;
 	default:
 		break;
 	}
 
-	return library_path;
+	return assets_path;
 }
 
 std::string ModuleResources::GenerateMetaFile(const char* assets_path)

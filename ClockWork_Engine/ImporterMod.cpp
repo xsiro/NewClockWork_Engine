@@ -15,6 +15,7 @@
 #include "Assimp/include/cimport.h"
 #include "Assimp/include/scene.h"
 #include "Assimp/include/postprocess.h"
+#include "MathGeoLib/include/MathGeoLib.h"
 #pragma comment (lib, "Assimp/libx86/assimp.lib")
 
 void ImporterMod::Import(char* fileBuffer, ResourceMod* model, uint size)

@@ -48,7 +48,9 @@ public:
 	bool DeleteResource(uint UID);
 	bool DeleteInternalResource(uint UID);
 	bool DeleteInternalResources(uint UID);
-
+	
+	std::string GenerateAssetsPath(const char* path);
+	
 	Resource* LoadResource(uint UID, ResourceType type);
 	void UnloadResource(Resource* resource);
 
@@ -68,7 +70,6 @@ public:
 	const char* GenerateLibraryPath(Resource* resource);
 	std::string GenerateLibraryPath(uint uid, ResourceType type);
 	std::string GetLibraryFolder(const char* file_in_assets);
-	const char* GenerateAssetsPath(const char* path);
 	std::string GenerateMetaFile(const char* assets_path);
 	void AddFileExtension(std::string& file, ResourceType type);
 

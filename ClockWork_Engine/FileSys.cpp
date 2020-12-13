@@ -55,8 +55,10 @@ void FileSys::CreateLibraryDirectories()
 	//CreateDir(MESHES_PATH);
 	//CreateDir(TEXTURES_PATH);
 	//CreateDir(MATERIALS_PATH);
-	CreateDir("Assets");
-	CreateDir("Assets/street/");
+	CreateDir("Assets/config/");
+	CreateDir("Assets/Models/");
+	CreateDir("Assets/Scenes/");
+	CreateDir("Assets/Textures/");
 
 	//CreateDir("Materials/");
 	//CreateDir(ANIMATIONS_PATH);
