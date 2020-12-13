@@ -169,6 +169,7 @@
     <ClCompile Include="ModuleSceneIntro.cpp" />
     <ClCompile Include="ModuleTransform.cpp" />
     <ClCompile Include="ModuleWindow.cpp" />
+    <ClCompile Include="parson\parson.c" />
     <ClCompile Include="Primitive.cpp" />
     <ClCompile Include="ModuleMesh.cpp" />
     <ClCompile Include="Resource.cpp" />

@@ -11,7 +11,7 @@ JSON::JSON()
 
 JSON::JSON(const char* buffer) : _object(nullptr)
 {
-	//_root = json_parse_string(buffer);
+	_root = json_parse_string(buffer);
 
 	if (_root != NULL)
 	{
@@ -56,9 +56,9 @@ JSON_Value* JSON::GetValue()
 
 uint JSON::Save(char** buffer)
 {
-	uint size;  /*json_serialization_size_pretty(_root);
+	uint size=  json_serialization_size_pretty(_root);
 	*buffer = new char[size];
-	json_serialize_to_buffer_pretty(_root, *buffer, size);*/
+	json_serialize_to_buffer_pretty(_root, *buffer, size);
 	return size;
 }
 
@@ -80,9 +80,9 @@ int JSON::GetInt(const char* name, int default)
 
 float JSON::GetFloat(const char* name, float default)
 {
-	/*if (json_object_has_value(_object, name) == 1)
+	if (json_object_has_value(_object, name) == 1)
 		return json_object_get_number(_object, name);
-	else*/
+	else
 		return default;
 }
 

@@ -2,6 +2,7 @@
 #include "Globals.h"
 #include "Color.h"
 #include "MathGeoLib/include/MathGeoLib.h"
+#include "parson.h"
 
 struct json_array_t;
 typedef json_array_t JSON_Array;
