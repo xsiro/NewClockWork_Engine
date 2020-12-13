@@ -6,6 +6,8 @@
 #include "Application.h"
 #include "ResourceTex.h"
 #include "glew/include/glew.h"
+#include "JSON.h"
+#include "Assets.h"
 #include "ResourceMat.h"
 #include "Assets.h"
 
@@ -88,7 +90,35 @@ void ModuleMaterial::BindTexture()
 		glBindTexture(GL_TEXTURE_2D, checkersID);
 }
 
+void ModuleMaterial::Save(GnJSONArray& save_array)
+{
+	JSON save_object;
 
+	save_object.AddInt("Type", type);
+	save_object.AddInt("Material UID", _resource->GetUID());
+
+	if (_diffuseTexture != nullptr)
+		save_object.AddInt("Texture UID", _diffuseTexture->GetUID());
+
+	save_array.AddObject(save_object);
+}
+
+void ModuleMaterial::Load(JSON& load_object)
+{
+	_resourceUID = load_object.GetInt("Material UID", 0);
+	_resource = (ResourceMat*)App->res->RequestResource(_resourceUID);
+
+	int textureUID = load_object.GetInt("Texture UID", -1);
+
+	if (_resource != nullptr && textureUID != -1)
+	{
+		_resource->diffuseTextureUID = textureUID;
+		_diffuseTexture = (ResourceTex*)App->res->RequestResource(textureUID);
+	}
+
+	if (_diffuseTexture == nullptr)
+		AssignCheckersImage();
+}
 
 void ModuleMaterial::OnEditor()
 {

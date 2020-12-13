@@ -30,8 +30,11 @@ public:
 	void SetReference(float3 reference);
 	void SetNearPlaneDistance(float distance);
 	void SetFarPlaneDistance(float distance);
-
+	void Save(GnJSONArray& save_array) override;
+	void Load(JSON& load_object) override;
 	void Look(float3 spot);
+	float3 GetPosition();
+	float3 GetReference();
 	Frustum GetFrustum();
 
 	float* GetViewMatrix();

@@ -3,7 +3,7 @@
 #include "Globals.h"
 
 #include <string>
-
+class JSON;
 
 enum ResourceType
 {
@@ -23,7 +23,9 @@ public:
 
 	ResourceType GetType();
 	uint GetUID();
-
+	virtual uint Save(JSON& base_object) { return -1; };
+	virtual uint SaveMeta(JSON& base_object, uint last_modification) { return -1; };
+	virtual void Load(JSON& base_object) {};
 
 public:
 	std::string name;

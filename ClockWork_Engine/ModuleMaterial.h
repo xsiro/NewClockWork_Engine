@@ -7,7 +7,7 @@
 class GnMesh;
 class ResourceMat;
 class ResourceTex;
-
+class GnJSONArray;
 
 class ModuleMaterial : public ModuleComponent {
 public:
@@ -20,7 +20,8 @@ public:
 
 	void BindTexture();
 
-
+	void Save(GnJSONArray& save_array) override;
+	void Load(JSON& load_object) override;
 	void OnEditor() override;
 
 	void SetTexture(ResourceTex* texture);

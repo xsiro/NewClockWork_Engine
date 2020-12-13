@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "Globals.h"
 #include "GameObject.h"
+#include "JSON.h"
 
 
 ModuleTransform::ModuleTransform() : ModuleComponent()
@@ -35,7 +36,29 @@ ModuleTransform::ModuleTransform(float3 position, Quat rotation, float3 scale) :
 
 ModuleTransform::~ModuleTransform() {}
 
+void ModuleTransform::Save(GnJSONArray& save_array)
+{
+	JSON save_object;
+	save_object.AddInt("Type", type);
 
+	save_object.AddFloat3("Position", _position);
+
+	save_object.AddQuaternion("Rotation", _rotation);
+
+	save_object.AddFloat3("Scale", _scale);
+
+	save_array.AddObject(save_object);
+}
+
+void ModuleTransform::Load(JSON& load_object)
+{
+	_position = load_object.GetFloat3("Position");
+	_rotation = load_object.GetQuaternion("Rotation");
+	_scale = load_object.GetFloat3("Scale");
+
+	UpdateEulerRotation();
+	UpdateGlobalTransform();
+}
 
 void ModuleTransform::OnEditor()
 {

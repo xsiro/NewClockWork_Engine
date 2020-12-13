@@ -6,7 +6,7 @@
 #include "MathGeoLib/include/MathGeoLib.h"
 
 class GnMesh;
-
+class GnJSONArray;
 
 class ModuleTransform : public ModuleComponent {
 public:
@@ -28,7 +28,8 @@ public:
 	void UpdateGlobalTransform();
 	void UpdateGlobalTransform(float4x4 parentGlobalTransform);
 	void ChangeParentTransform(float4x4 newParentGlobalTransform);
-
+	void Save(GnJSONArray& save_array) override;
+	void Load(JSON& load_object) override;
 	void Reset();
 
 	void SetPosition(float x, float y, float z);

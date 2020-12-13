@@ -5,6 +5,8 @@
 class GameObject;
 class Resource;
 enum ResourceType;
+class JSON;
+class GnJSONArray;
 
 enum ComponentType {
 	TRANSFORM,
@@ -22,7 +24,8 @@ public:
 	virtual void Update();
 	virtual void Enable();
 	virtual void Disable();
-
+	virtual void Save(GnJSONArray& save_array) {};
+	virtual void Load(JSON& load_object) {};
 
 
 	bool IsEnabled();

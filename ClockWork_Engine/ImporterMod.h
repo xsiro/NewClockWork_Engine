@@ -16,7 +16,7 @@ struct GnTexture;
 class GnMesh;
 class ModuleTransform;
 class ModuleMaterial;
-
+class GnJSONArray;
 class aiMesh;
 class aiScene;
 struct aiNode;

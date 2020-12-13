@@ -8,6 +8,7 @@
 #include "ModuleMesh.h"
 #include "ModuleMaterial.h"
 #include "Cam.h"
+#include "JSON.h"
 
 #include "ResourceMod.h"
 
@@ -130,6 +131,139 @@ void ImporterMod::ImportChildren(const aiScene* scene, aiNode* ainode, aiNode* p
 	}
 }
 
+uint64 ImporterMod::Save(ResourceMod* model, char** fileBuffer)
+{
+	char* buffer;
+
+	JSON base_object;
+	GnJSONArray nodes_array = base_object.AddArray("Nodes");
+
+	for (size_t i = 0; i < model->nodes.size(); i++)
+	{
+		JSON node_object;
+
+		node_object.AddString("Name", model->nodes[i].name.c_str());
+		node_object.AddInt("UID", model->nodes[i].UID);
+		node_object.AddInt("Parent UID", model->nodes[i].parentUID);
+
+		node_object.AddFloat3("Position", model->nodes[i].position);
+		node_object.AddQuaternion("Rotation", model->nodes[i].rotation);
+		node_object.AddFloat3("Scale", model->nodes[i].scale);
+
+		if (model->nodes[i].meshID != -1)
+		{
+			node_object.AddInt("MeshID", model->nodes[i].meshID);
+			node_object.AddString("mesh_library_path", App->res->GenerateLibraryPath(model->nodes[i].meshID, ResourceType::RESOURCE_MESH).c_str());
+		}
+
+		if (model->nodes[i].materialID != -1)
+		{
+			node_object.AddInt("MaterialID", model->nodes[i].materialID);
+			node_object.AddString("material_library_path", App->res->GenerateLibraryPath(model->nodes[i].materialID, ResourceType::RESOURCE_MATERIAL).c_str());
+		}
+
+		nodes_array.AddObject(node_object);
+	}
+
+	//Lights --------------------------------------------------------
+	GnJSONArray lights_array = base_object.AddArray("Lights");
+	for (size_t i = 0; i < model->lights.size(); i++)
+	{
+		model->lights[i]->Save(lights_array);
+	}
+
+	//Cameras --------------------------------------------------------
+	GnJSONArray cameras_array = base_object.AddArray("Cameras");
+	for (size_t i = 0; i < model->cameras.size(); i++)
+	{
+		model->cameras[i]->Save(cameras_array);
+	}
+
+	uint size = base_object.Save(&buffer);
+	*fileBuffer = buffer;
+
+	return size;
+}
+
+bool ImporterMod::Load(char* fileBuffer, ResourceMod* model, uint size)
+{
+	bool ret = true;
+
+	JSON model_data(fileBuffer);
+	GnJSONArray nodes_array = model_data.GetArray("Nodes");
+
+	std::unordered_set<uint> meshes;
+	std::unordered_set<uint> materials;
+
+	for (size_t i = 0; i < nodes_array.Size(); i++)
+	{
+		JSON nodeObject = nodes_array.GetObjectAt(i);
+		ModelNode modelNode;
+		modelNode.name = nodeObject.GetString("Name", "No Name");
+		modelNode.UID = nodeObject.GetInt("UID");
+		modelNode.parentUID = nodeObject.GetInt("Parent UID");
+
+		modelNode.position = nodeObject.GetFloat3("Position", float3::zero);
+		modelNode.rotation = nodeObject.GetQuaternion("Rotation", Quat::identity);
+		modelNode.scale = nodeObject.GetFloat3("Scale", float3::zero);
+
+		modelNode.meshID = nodeObject.GetInt("MeshID");
+		if (modelNode.meshID != -1)
+		{
+			App->res->CreateResourceData(modelNode.meshID, modelNode.name.c_str(),
+				model->assetsFile.c_str(), nodeObject.GetString("mesh_library_path", "No Path"));
+			meshes.emplace(modelNode.meshID);
+			//if (App->resources->LoadResource(modelNode.meshID, ResourceType::RESOURCE_MESH) == nullptr)
+				//ret = false;
+		}
+
+		modelNode.materialID = nodeObject.GetInt("MaterialID");
+		if (modelNode.materialID != -1)
+		{
+			App->res->CreateResourceData(modelNode.materialID, modelNode.name.c_str(),
+				model->assetsFile.c_str(), nodeObject.GetString("material_library_path", "No Path"));
+			materials.emplace(modelNode.materialID);
+
+			//if (App->resources->LoadResource(modelNode.materialID, ResourceType::RESOURCE_MATERIAL) == nullptr)
+				//ret = false;
+		}
+
+		model->nodes.push_back(modelNode);
+	}
+
+	for (auto it = meshes.begin(); it != meshes.end(); ++it) {
+		if (App->res->LoadResource(*it, ResourceType::RESOURCE_MESH) == nullptr)
+			ret = false;
+	}
+
+	for (auto it = materials.begin(); it != materials.end(); ++it) {
+		if (App->res->LoadResource(*it, ResourceType::RESOURCE_MATERIAL) == nullptr)
+			ret = false;
+	}
+
+	GnJSONArray lights_array = model_data.GetArray("Lights");
+	for (size_t i = 0; i < lights_array.Size(); i++)
+	{
+		JSON light_object = lights_array.GetObjectAt(i);
+		Light* light = new Light();
+		light->Load(light_object);
+		model->lights.push_back(light);
+	}
+
+	GnJSONArray cameras_array = model_data.GetArray("Cameras");
+	for (size_t i = 0; i < cameras_array.Size(); i++)
+	{
+		JSON cameras_object = cameras_array.GetObjectAt(i);
+		Camera* camera = new Camera();
+		camera->Load(cameras_object);
+		camera->Look(camera->GetPosition() + camera->GetReference());
+		model->cameras.push_back(camera);
+	}
+
+	model_data.Release();
+	return ret;
+}
+
 void ImporterMod::AddParentTransform(ModelNode* node, ModelNode* parentNode)
 {
 	node->position += parentNode->position;
@@ -192,7 +326,39 @@ void ImporterMod::LoadTransform(aiNode* node, ModelNode& modelNode)
 	modelNode.scale = float3(scaling.x, scaling.y, scaling.z);
 }
 
+void ImporterMod::ExtractInternalResources(const char* path, std::vector<uint>& meshes, std::vector<uint>& materials)
+{
+	char* buffer = nullptr;
+	uint size = FileSys::Load(path, &buffer);
+	JSON model_data(buffer);
+	GnJSONArray nodes_array = model_data.GetArray("Nodes");
 
+	for (size_t i = 0; i < nodes_array.Size(); i++)
+	{
+		JSON nodeObject = nodes_array.GetObjectAt(i);
+
+		int meshID = nodeObject.GetInt("MeshID");
+		if (meshID != -1)
+		{
+			//avoid duplicating meshes
+			if (std::find(meshes.begin(), meshes.end(), meshID) == meshes.end()) {
+				meshes.push_back(meshID);
+			}
+		}
+
+		int materialID = nodeObject.GetInt("MaterialID");
+		if (materialID != -1)
+		{
+			//avoid duplicating materials
+			if (std::find(materials.begin(), materials.end(), materialID) == materials.end()) {
+				materials.push_back(materialID);
+			}
+		}
+	}
+
+	model_data.Release();
+	RELEASE_ARRAY(buffer);
+}
 
 GameObject* ImporterMod::ConvertToGameObject(ResourceMod* model)
 {
@@ -261,55 +427,110 @@ GameObject* ImporterMod::ConvertToGameObject(ResourceMod* model)
 	return root;
 }
 
+void ImporterMod::ExtractInternalResources(const char* meta_file, ResourceMod& model)
+{
+	char* buffer = nullptr;
+	uint size = FileSys::Load(meta_file, &buffer);
+	JSON model_data(buffer);
+	GnJSONArray nodes_array = model_data.GetArray("Nodes");
 
+	for (size_t i = 0; i < nodes_array.Size(); i++)
+	{
+		JSON nodeObject = nodes_array.GetObjectAt(i);
+		ModelNode modelNode;
+
+		modelNode.name = nodeObject.GetString("Name", "No Name");
+		modelNode.meshID = nodeObject.GetInt("MeshID");
+		modelNode.materialID = nodeObject.GetInt("MaterialID");
+
+		model.nodes.push_back(modelNode);
+	}
+
+	model_data.Release();
+	RELEASE_ARRAY(buffer);
+}
+
+bool ImporterMod::InternalResourcesExist(const char* path)
+{
+	bool ret = true;
+
+	char* buffer;
+	FileSys::Load(path, &buffer);
+
+	JSON meta_data(buffer);
+	GnJSONArray nodes_array = meta_data.GetArray("Nodes");
+
+	//generate an assets file if the original file is a meta file
+	std::string assets_file = path;
+	size_t size = assets_file.find(".meta");
+	if (size != std::string::npos)
+		assets_file = assets_file.substr(0, size);
+
+	for (size_t i = 0; i < nodes_array.Size(); i++)
+	{
+		JSON nodeObject = nodes_array.GetObjectAt(i);
+		std::string nodeName = nodeObject.GetString("Name", "No Name");
+
+		int meshID = nodeObject.GetInt("MeshID");
+		if (meshID != -1)
+		{
+			std::string meshLibraryPath = nodeObject.GetString("mesh_library_path", "No path");
+
+			if (!FileSys::Exists(meshLibraryPath.c_str())) {
+				ret = false;
+				LOG_ERROR("Mesh: %d not found", meshID);
+				break;
+			}
+			else
+			{
+				App->res->CreateResourceData(meshID, nodeName.c_str(), assets_file.c_str(), meshLibraryPath.c_str());
+			}
+		}
+
+		int materialID = nodeObject.GetInt("MaterialID");
+		if (materialID != -1)
+		{
+			std::string materialLibraryPath = nodeObject.GetString("material_library_path", "No path");
+
+			if (!FileSys::Exists(materialLibraryPath.c_str())) {
+				ret = false;
+				LOG_ERROR("Material: %s not found", materialLibraryPath.c_str());
+				break;
+			}
+			else
+			{
+				App->res->CreateResourceData(materialID, nodeName.c_str(), assets_file.c_str(), materialLibraryPath.c_str());
+			}
+		}
+	}
+
+	RELEASE_ARRAY(buffer);
+
+	return ret;
+}
 
 void ImporterMod::ConvertToDesiredAxis(aiNode* node, ModelNode& modelNode)
 {
-	/*
-		if (node->mMetaData == nullptr)
-		return;
+	Options importingOptions = App->res->modelImportingOptions;
+	Axis upAxisEnum = importingOptions.upAxis;
+	Axis forwardAxisEnum = importingOptions.forwardAxis;
 
-	int upAxis;
-	node->mMetaData->Get("UpAxis", upAxis);
-	int upAxisSign;
-	node->mMetaData->Get("UpAxisSign", upAxisSign);
-	upAxis *= upAxisSign;
+	int forwardAxisSign = forwardAxisEnum < 3 ? 1 : -1;
+	int upAxisSign = upAxisEnum < 3 ? 1 : -1;
 
-	int frontAxis;
-	node->mMetaData->Get("frontAxis", frontAxis);
-	int frontAxisSign;
-	node->mMetaData->Get("frontAxisSign", frontAxisSign);
-	frontAxis *= frontAxisSign;
+	float3 upAxis = float3::zero;
+	upAxis.At(upAxisEnum % 3) = upAxisSign;
 
-	int coordAxis;
-	node->mMetaData->Get("coordAxis", coordAxis);
-	int coordAxisSign;
-	node->mMetaData->Get("coordAxisSign", coordAxisSign);
-	coordAxis *= coordAxisSign;
+	float3 forwardAxis = float3::zero;
+	forwardAxis.At(forwardAxisEnum % 3) = forwardAxisSign;
 
-	float3x3 modelBasis = float3x3::zero;
-	modelBasis[coordAxis][0] = coordAxisSign;
-	modelBasis[upAxis][1] = upAxisSign;
-	modelBasis[frontAxis][2] = frontAxisSign;
+	float3 rightAxis = forwardAxis.Cross(upAxis);
 
-	float3x3 desiredBasis = float3x3::zero;
+	float3x3 desiredAxis(rightAxis, upAxis, forwardAxis);
 
-	float3 desiredForwardAxis = float3::zero;
-	desiredForwardAxis[App->resources->modelImportingOptions.forwardAxis % 3] = App->resources->modelImportingOptions.forwardAxis;
+	float4x4 nodeTransformation = float4x4::FromTRS(modelNode.position, modelNode.rotation, modelNode.scale);
+	nodeTransformation = desiredAxis * nodeTransformation;
 
-	float3 desiredUpAxis = float3::zero;
-	desiredUpAxis[App->resources->modelImportingOptions.upAxis % 3] = App->resources->modelImportingOptions.upAxis;
+	nodeTransformation.Decompose(modelNode.position, modelNode.rotation, modelNode.scale);
 
-	float3 desiredCoordAxis = float3::zero;
-	desiredCoordAxis = desiredForwardAxis.Cross(desiredUpAxis);
-
-	desiredBasis.SetCol(0, desiredCoordAxis);
-	desiredBasis.SetCol(1, desiredUpAxis);
-	desiredBasis.SetCol(2, desiredForwardAxis);
-
-	float3 rotation = modelBasis.ToEulerXYZ();
-
-	modelNode.rotation = Quat::FromEulerXYZ(rotation.x, rotation.y, rotation.z);
-	*/
-	modelNode;
 }

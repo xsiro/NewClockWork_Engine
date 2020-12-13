@@ -12,7 +12,7 @@ typedef json_value_t JSON_Value;
 struct json_object_t;
 typedef json_object_t JSON_Object;
 
-class JSON;
+class GnJSONArray;
 
 class JSON
 {

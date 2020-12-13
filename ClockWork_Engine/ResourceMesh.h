@@ -1,7 +1,7 @@
 #pragma once
 #include "Resource.h"
 
-
+class JSON;
 
 class ResourceMesh : public Resource
 {
@@ -9,7 +9,7 @@ public:
 	ResourceMesh(uint UID);
 	~ResourceMesh();
 
-
+	void Load(JSON& base_object);
 	void GenerateBuffers();
 	void DeleteBuffers();
 

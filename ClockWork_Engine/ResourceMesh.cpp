@@ -31,6 +31,7 @@ ResourceMesh::~ResourceMesh()
 }
 
 
+void ResourceMesh::Load(JSON& base_object) {}
 
 void ResourceMesh::GenerateBuffers()
 {

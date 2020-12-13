@@ -22,7 +22,8 @@ public:
 	//Resource* GetResource(ResourceType type) override;
 	void GenerateAABB();
 	AABB GetAABB();
-
+	void Save(GnJSONArray& save_array) override;
+	void Load(JSON& load_object) override;
 	virtual void Update() override;
 	virtual void Render();
 	virtual void OnEditor() override;

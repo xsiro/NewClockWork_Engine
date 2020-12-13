@@ -1,5 +1,6 @@
 #pragma once
 #include "Globals.h"
+#include "JSON.h"
 #include "Resource.h"
 #include "MathGeoLib/include/MathGeoLib.h"
 #include <vector>
@@ -25,7 +26,8 @@ class ResourceMod : public Resource {
 public:
 	ResourceMod(uint UID);
 	~ResourceMod();
-
+	uint Save(JSON& base_object) override;
+	uint SaveMeta(JSON& base_object, uint last_modification) override;
 
 public:
 	std::vector<ModelNode> nodes;

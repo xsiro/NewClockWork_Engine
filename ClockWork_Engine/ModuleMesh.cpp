@@ -5,7 +5,7 @@
 #include "ModuleMaterial.h"
 #include "GameObject.h"
 #include "ModuleTransform.h"
-
+#include "JSON.h"
 #include "ResourceMesh.h"
 
 #include "glew/include/glew.h"
@@ -28,6 +28,7 @@ GnMesh::~GnMesh()
 }
 
 
+
 void GnMesh::SetResourceUID(uint UID)
 {
 	_resourceUID = UID;
@@ -38,10 +39,22 @@ void GnMesh::SetResourceUID(uint UID)
 	//App->resources->ReleaseResource(_resourceUID);
 }
 
-//Resource* GnMesh::GetResource(ResourceType type)
-//{
-//	return _resource;
-//}
+void GnMesh::Save(GnJSONArray& save_array)
+{
+	JSON save_object;
+
+	save_object.AddInt("Type", type);
+	save_object.AddInt("MeshID", _resource->GetUID());
+
+	save_array.AddObject(save_object);
+}
+
+void GnMesh::Load(JSON& load_object)
+{
+	int meshUID = load_object.GetInt("MeshID");
+	SetResourceUID(meshUID);
+}
+
 
 void GnMesh::GenerateAABB()
 {
